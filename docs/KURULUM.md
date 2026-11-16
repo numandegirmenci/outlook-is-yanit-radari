@@ -1,38 +1,46 @@
-# Kurulum ve ilk test
+# Kurulum ve ilk kullanım — Outlook İş ve Yanıt Radarı v0.8.3
 
-## Önkoşullar
+Bu rehber, teknik terimlerle uğraşmadan ilk kurulumu yapabilmen için hazırlandı.
 
-- Windows üzerinde **klasik Outlook** kullanın. Yeni Outlook ile çalışmaz.
-- Kurumsal hesaplarda makro güvenlik politikaları nedeniyle kurulum veya çalıştırma engellenebilir. Kurumunuzun politikasını **aşmayın**.
-- Kurulum öncesinde mevcut VBA modüllerini `File → Export File` ile yedekleyin.
+## Önce kontrol et
 
-## İlk kez kurulum
+- Bilgisayarında **klasik Outlook** olmalı. Yeni Outlook veya tarayıcıda Outlook çalışmaz.
+- Şirketin makro çalıştırmayı engelliyorsa **güvenlik politikasını aşma**; bilgi işlem biriminden izin al.
+- Mevcut bir VBA projen varsa önce yedekle.
 
-1. ZIP arşivini bilgisayarda çıkarın.
-2. Klasik Outlook'ta `Alt + F11`.
-3. Menüden `File → Import File` → `src/IsYanitRadari.bas` dosyasını seçin.
-4. Sol taraftan `ThisOutlookSession` kod sayfasını açın, `src/ThisOutlookSession.txt` içindeki olay kodunu ekleyin.
-5. **Önemli:** `Application_Startup` / `Application_NewMailEx` zaten varsa ikinci prosedür açmak yerine, var olanın içine ilgili çağrıları birleştirin; aksi halde `Ambiguous name detected` hatası alabilirsiniz.
-6. `Debug → Compile VBAProject` ile derlemeyi kontrol edin. Hata varsa yayına/takibe geçmeden düzeltin.
-7. `Ctrl + S` ile kaydedip Outlook'u **tamamen kapatın**, yeniden açın.
+## İlk kurulum
 
-## Mevcut deneme sürümünden güncelleme
+1. GitHub'da **Code → Download ZIP** düğmesiyle kodları indir, ZIP'i bir klasöre aç.
+2. Outlook açıkken **`Alt + F11`** tuşlarına bas.
+3. VBA penceresinin üst menüsünden **File → Import File** seç ve `src/IsYanitRadari.bas` dosyasını yükle. `TakipKolay` adlı modül görünür.
+4. Aynı şekilde `src/RadarIsMasam.bas` dosyasını da yükle.
+5. Yanıt algılama olaylarını kullanmak istiyorsan `src/ThisOutlookSession.txt` dosyasını incele. `ThisOutlookSession` altında zaten **Application_Startup** ya da **Application_NewMailEx** varsa aynı adlı ikinci prosedür oluşturma; kodların uygun şekilde birleştirilmesi gerekir. Bu konuda emin değilsen bu adımı atla, yanıtları `Takip_4_YanitlariKontrolEt` ile elle kontrol et.
+6. **Debug → Compile VBAProject** seç. Hata varsa kodu çalıştırma; hata metnini not al.
+7. `Ctrl + S` ile kaydet, Outlook'u tamamen kapatıp yeniden aç.
+8. Deneme mesajı seç. `Alt + F8` → `Takip_2_YapacagimIs` → Çalıştır. Açılan menüde `2` yazarsan ertesi gün 09.00'a hatırlatma konur.
+9. `Alt + F8` → `Radar_11_IsMasam`. Açılan görev listesinden yeni deneme kaydını kontrol et.
 
-- Eski `TakipKolay` modülünü önce dışa aktararak yedekleyin. Sonra yalnızca bu modülü kaldırıp yenisini yükleyin.
-- Eski özel görev klasörünü silmeyin. Bu sürüm onunla uyumludur.
-- `ThisOutlookSession` içinde çalışan ve aynı olay adını kullanan başka kod varsa üzerine yazmayın veya kopyalamayın; önce birleştirin.
+## v0.7.x veya v0.8.x'ten güncelleme
 
-## Kullanım: üç adım
+1. `Alt + F11` → **Modules** altındaki `TakipKolay` modülüne sağ tık → **Export File** ile yedekle.
+2. Eski `TakipKolay` modülünü **Remove** ile kaldır. Bu işlem Outlook görevlerini silmez.
+3. Yeni `src/IsYanitRadari.bas` dosyasını **Import File** ile yükle.
+4. Bilgisayarında `RadarIsMasam` modülü yoksa `src/RadarIsMasam.bas` dosyasını da yükle. V0.8.2 kullanıyorsan mevcut modül aynı sürümdür; yeniden yüklemen gerekmez.
+5. `ThisOutlookSession` bölümünü sırf güncelleme yapıyorsun diye değiştirme.
+6. Derle, kaydet ve Outlook'u yeniden aç.
 
-1. Outlook'ta bir e-posta seçin.
-2. `Alt + F8` → `Takip_1_YanitBekliyorum` (**karşı taraftan yanıt bekliyorum**) ya da `Takip_2_YapacagimIs` (**benim işim var**).
-3. Tarih/saat sorulduğunda `24.11.2026 14:30` biçiminde tarih girin; tarih istemiyorsanız `YOK` yazın. Boş/İptal takip oluşturmaz. Ardından `Takip_3_Islerim` ile raporu açın.
+**Görevler → Takip Kolay** klasörünü silme. Eski takipler aynı klasörde kalır.
 
-## Hata durumunda
+## Hızlı tarih seçimi
 
-- **'İşlerim' sıfır gösteriyor:** `Takip_7_SistemKontrolu` komutunu çalıştırın. Takipler Outlook Görevler altındaki **Takip Kolay** klasörüne yazılır.
-- **'Type mismatch / Hata 13':** Kullandığınız sürümü, tam hata metnini, hangi makroda olduğunu ve `Debug` ile durulan satırı (varsa) paylaşın. V0.7'de kayıt bazlı hata kontrolü vardır, ancak farklı Outlook yapılandırmalarında yine hata oluşabilir.
-- **Yanıt bulunmuyor:** Yanıtın varsayılan Gelen Kutusu veya alt klasörlerinde olduğunu ve aynı konuşma zincirinde geldiğini kontrol edin. 45 gün ve performans sınırları nedeniyle bazı iletiler atlanabilir.
-- **Makrolar görünmüyor:** Modül yanlışlıkla `ThisOutlookSession`'a yapıştırılmış olabilir; `.bas` dosyasını **modül olarak** içeri aktarın.
+`1`: 1 saat sonra. `2`: yarın 09.00. `3`: 3 gün sonra 09.00. `4`: bir hafta sonra 09.00. `5`: tarih ve saatini yaz (ör. `25.11 15:30`). `0`: hatırlatma olmadan kaydet. **Boş giriş / İptal:** vazgeç.
 
-**Güvenlik:** Makro ayarlarında *tüm makroları koşulsuz etkinleştirmeyin*. Kurumunuzun politikalarına uyun.
+Kayıt veya tarih değişikliği için seçimi kullanıcı yapar; makro tarihi kendiliğinden belirlemez.
+
+## Bir şey çalışmazsa
+
+- VBA derleme hatasının **tam metnini** not al.
+- İş listesi görünmüyorsa `Takip_7_SistemKontrolu` veya `Takip_10_DurumleriKontrolEt` çalıştır.
+- Outlook görünümü hata verirse görev klasörünü silme; görünüm ile görev kaydı farklı şeylerdir.
+- Yanıt algılaması her klasörde ve her hesabın mesajlarında kusursuz çalışmayı garanti etmez.
+- GitHub'da hata bildirirken **gerçek iş e-postası, adres, sözleşme, evrak veya kişisel bilgi paylaşma**.

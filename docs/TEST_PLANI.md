@@ -1,40 +1,18 @@
-# Genel beta test planı
+# v0.8.3 — Basit test planı
 
-> **Doğrulama durumu:** V0.7'nin tüm işlevleri gerçek klasik Outlook üzerinde henüz uçtan uca doğrulanmadı. Kaynak paketinin bütünlüğü kontrol edilmiştir; bu, VBA derleme ve çalışma testinin yerine geçmez.
+Önemli: İlk denemeleri gerçek iş yerine **test e-postalarıyla** yap.
 
-**Gerçek müşteri/şirket yazışmaları yerine örnek e-postalar kullanın.**
+1. `Alt + F11` → **Debug → Compile VBAProject**: derleme hatası olmamalı.
+2. Test e-postası seç → `Takip_2_YapacagimIs` → `2`: yarın 09.00 için hatırlatma oluşturulmalı.
+3. Farklı e-posta seç → `Takip_1_YanitBekliyorum` → `0`: hatırlatmasız görev açılmalı.
+4. Bir test görevi seç → `Takip_6_TarihiDegistir` → `5` → gelecekteki `gg.aa 15:30`: tarih güncellenmeli.
+5. Aynı görev → `Takip_6_TarihiDegistir` → boş/İptal: önceki tarih değişmemeli.
+6. Geçersiz tarih (`31.02`) veya geçmiş tarih gir: işlem reddedilmeli.
+7. `Radar_11_IsMasam`: Yapılacaklar `TODO`, Yanıt bekleyenler `WAIT` gibi gruplarda görünmeli.
+8. Test görevi seç → `Radar_12_KaynakYazismayiAc`: kaynak mesaj bulunabiliyorsa açılmalı.
+9. Deneme görevi seç → `Radar_13_KategoriDegistir`: durum değişikliği kaydedilmeli.
+10. `Takip_3_Islerim` raporunu aç: yapılacak işler kaybolmamalı, hiçbir mail otomatik gönderilmemeli.
+11. `Takip_10_DurumleriKontrolEt`: sayılar görevlerle uyumlu olmalı.
+12. Yanıt takibi testi için deneme yazışmasına yanıt ver: `Takip_4_YanitlariKontrolEt` ile kontrol et; görev otomatik tamamlanmamalı.
 
-| Test | Beklenen sonuç | Durum |
-|---|---|---|
-| Klasik Outlook VBA derlemesi | `Debug → Compile` hatasız | Kullanıcı testi gerekli |
-| E-postayı 'Yanıt bekliyorum' olarak işaretle | Görevler > Takip Kolay altında yeni kayıt | Kullanıcı testi gerekli (önceki sürümde başarılı örnek var) |
-| `YOK` ile tarihsiz takip | Tarih ve hatırlatma oluşturulmamalı | Kullanıcı testi gerekli |
-| `İşlerim` raporu | Gerçek açık görev sayısı ve içerik özeti | Kullanıcı testi gerekli |
-| Farklı hesapla yazışmaya yanıt | Takip `İncelenecek` olmalı, otomatik kapanmamalı | Kullanıcı testi gerekli |
-| Outlook kapalıyken gelen yanıt | Açılış taramasında bulunabilir, garanti değil | Kullanıcı testi gerekli |
-| Hatırlatma taslağı | Gerçek konuşma içeriği görülmeli, otomatik gönderim olmamalı | Kullanıcı testi gerekli |
-| 'Tamamlandı' | Onay istenmeli, görev tamamlanmalı | Kullanıcı testi gerekli |
-
-## Hata raporu
-
-- Outlook sürümü (klasik/yeni), Windows sürümü:
-- Makro adı:
-- Tam hata numarası ve metni:
-- Hatadan hemen önce yapılan işlem:
-- `Debug` düğmesiyle vurgulanan kod satırı (varsa):
-- İlgili test e-postasının gizlilikten arındırılmış örnek konusu:
-
-## Tarama limitleri
-
-Elle kontrol: son 45 gün, en fazla 80 klasör, klasör başına 200 e-posta, yaklaşık 10 saniyelik bütçe.
-
-Açılış kontrolü: son 45 gün, 30 klasör, klasör başına 80 e-posta, yaklaşık 3 saniyelik bütçe. **Bu kapsam eksiksiz tarama garantisi değildir.**
-
-
-## v0.7.1 kontrolü
-
-1. Tarihi geçmiş bir e-postayı **Yapacağım İş** olarak kaydedin; raporda **Yapılacak İşler** altında görünmeli.
-2. Aynı e-postayı **Yanıt Bekliyorum** olarak kaydedin; iki ayrı görev oluşmalı.
-3. `Takip_10_DurumleriKontrolEt` sayıları raporla karşılaştırın.
-4. Yeni makroyu import etmeden eski modülü yedekleyin. `ThisOutlookSession` dosyası değişmedi.
-5. Farklı Outlook kurulumlarında VBA compile ve canlı akış testleri tamamlanmadan v1.0 kararlı demeyin.
+**Beta notu:** Bu testlerin tamamı gerçek Outlook ortamında doğrulanmadan kararlı sürüm iddiası kullanma. İş Masam görünümü Outlook sürümüne bağlı farklılık gösterebilir.

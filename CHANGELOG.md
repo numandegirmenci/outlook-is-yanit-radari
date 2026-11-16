@@ -1,20 +1,18 @@
 # Sürüm notları
 
-## v0.7.0-beta — Genel pilot kaynak paketi
+## v0.8.3 Genel Beta — 16 Kasım 2026
 
-- Kullanıcının belirlediği hatırlatma tarihi/saatine geçildi; `YOK` seçeneği eklendi.
-- Gelen yanıtla mevcut hatırlatma tarihinin otomatik değiştirilmesi kaldırıldı.
-- `İşlerim` raporunda görev bazında hata toleransı ve yazışma özeti yer alıyor.
-- Hatırlatma taslağına yazışma içeriği eklendi (9000 karakter sınırı).
-- Manuel/açılış yanıt taraması son 45 güne çıkarıldı; performans sınırları eklendi.
-- Marka adı **Outlook İş ve Yanıt Radarı** olarak değişti. Kod uyumluluğu nedeniyle eski VBA modül adı `TakipKolay` ve Outlook görev klasörü `Takip Kolay` olarak korunuyor.
-- Durum: **Beta**. Gerçek Outlook üzerinde v0.7 tam uçtan uca test edilmedi.
+- Tarih girme zorunluluğu yerine **0–5 hızlı hatırlatma seçenekleri** eklendi.
+- `1`: 1 saat; `2`: yarın 09.00; `3`: 3 gün; `4`: 7 gün; `5`: özel tarih/saat; `0`: tarihsiz.
+- Aynı menü yeni takip ve var olan görevin tarihini değiştirme sırasında kullanılır.
+- Kullanıcı seçim yapmadan varsayılan tarih atanmaz; boş/İptal işlemi iptal eder.
+- Önceki v0.8.2 **SQL'siz, durumlara göre gruplu İş Masam** modülü bu pakete dahil edildi.
+- v0.8'den bu yana yeni görevler tam e-posta gövdesi yerine kaynak e-posta kimliğini saklar; mevcut eski görevler korunur.
+- Son 45 güne yönelik sınırlı yanıt kontrolü ve taslak hatırlatma altyapısı devam eder.
+- **Beta:** Statik kontroller yapıldı; gerçek Outlook üzerinde uçtan uca test tamamlanmadı.
 
+---
 
-## v0.7.1 (genel beta hata düzeltmesi, 16 Kasım 2026)
+## Önceki sürümler
 
-- **İşlerim** raporunda yapılacak işler, tarihleri gecikmiş veya bugün olsa da kendi kategorilerinde gösterilir.
-- Aynı e-posta üzerinden bir **Yanıt Bekliyorum** ve bir **Yapacağım İş** takibi ayrı tutulabilir.
-- Yeni `Takip_10_DurumleriKontrolEt` komutu durum sayılarını gösterir.
-- Görevler silinmez veya otomatik taşınmaz; Outlook üzerinde uçtan uca test henüz tamamlanmadı.
-- Makro dosyası Windows Türkçe (CP1254) kodlamalıdır; GitHub'dan **Download raw file** veya ZIP ile indirilmelidir.
+v0.7.1: Yapılacak işler ve yanıt bekleyenler ayrı listelenebilir. v0.7: İlk genel beta, HTML rapor ve 45 günlük yanıt kontrolü. Ayrıntılı kod geçmişi GitHub commitlerinde bulunur.

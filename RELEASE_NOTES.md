@@ -1,20 +1,13 @@
-# Outlook İş ve Yanıt Radarı — v0.7.0-beta
+# v0.8.3 Genel Beta — Hızlı Tarih ve İş Masam
 
-**Açık kaynaklı genel beta / pilot.** Klasik Outlook'ta seçilen e-postalardan yapılacak iş veya yanıt bekleme takibi oluşturur; hatırlatma zamanını kullanıcı belirler, Outlook içinde HTML iş özeti ve gönderilmeyen hatırlatma taslağı hazırlar.
+**Ne işe yarar?** Outlook'tan ayrılmadan e-postalarını yanıt bekleyen veya yapılacak işe çevirirsin. İşleri bir listede görürsün ve zamanını kendin belirlersin.
 
-**Kurulum:** ZIP'i çıkarıp `src/IsYanitRadari.bas` dosyasını Outlook VBA'ya modül olarak içeri aktarın. Olay kodunu `ThisOutlookSession` içine ekleyin. `docs/KURULUM.md` dosyasını okuyun.
+**Bu sürümde yeni:** Her seferinde tarih yazmana gerek yok. 1 (1 saat), 2 (yarın 09.00), 3 (3 gün), 4 (7 gün), 5 (özel tarih), 0 (hatırlatmasız) yazman yeterli.
 
-**Gereksinim:** Windows + klasik Outlook + izinli VBA. **Yeni Outlook desteklenmiyor.**
+**İş Masam:** Görevler Outlook'un kendi listesinde TODO, WAIT, REVIEW, DONE durumlarına göre gruplandırılabilir. Kaynak yazışma seçili görevden açılabilir.
 
-**Beta uyarısı:** V0.7 gerçek Outlook ortamında geniş kapsamlı test edilmedi. Kritik işlerde yalnızca bu yazılıma güvenmeyin; otomatik yanıt tespiti 45 gün / performans sınırları nedeniyle eksik olabilir.
+**Gizlilik:** Veri harici bir iş takip sunucusuna gönderilmez; Outlook Görevler ve postalarınız şirket Exchange/Microsoft 365 sistemine eşitlenebilir. Önceki sürümlerin kayıtları taşınmaz veya silinmez.
 
-**Gizlilik:** Takip görevleri Outlook/Exchange ile senkronize olabilir; e-posta metinleri görev gövdelerine kopyalanabilir. Kurum izinleri gerekli olabilir. Makro kendi başına e-posta göndermez.
+**Kurulum:** Windows'ta klasik Outlook gerekir. VBA izinleri kuruluşun politikasına tabidir. Kodlar `src/` klasöründedir, kolay rehber: [Kurulum](docs/KURULUM.md).
 
-
-## v0.7.1 (genel beta hata düzeltmesi, 16 Kasım 2026)
-
-- **İşlerim** raporunda yapılacak işler, tarihleri gecikmiş veya bugün olsa da kendi kategorilerinde gösterilir.
-- Aynı e-posta üzerinden bir **Yanıt Bekliyorum** ve bir **Yapacağım İş** takibi ayrı tutulabilir.
-- Yeni `Takip_10_DurumleriKontrolEt` komutu durum sayılarını gösterir.
-- Görevler silinmez veya otomatik taşınmaz; Outlook üzerinde uçtan uca test henüz tamamlanmadı.
-- Makro dosyası Windows Türkçe (CP1254) kodlamalıdır; GitHub'dan **Download raw file** veya ZIP ile indirilmelidir.
+**Durum:** Genel Beta. Outlook üzerinde tüm fonksiyonlar canlı doğrulanmış değildir. Deneme postasıyla başlayın; güvenlik politikalarını aşmayın.

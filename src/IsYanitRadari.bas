@@ -1,7 +1,7 @@
 Attribute VB_Name = "TakipKolay"
 Option Explicit
 
-' OUTLOOK ÝÞ VE YANIT RADARI - Klasik Outlook, PILOT v0.7.1
+' OUTLOOK ÝÞ VE YANIT RADARI - Klasik Outlook, PILOT v0.8.3 (OZEL TEST)
 ' Yalnizca secilen mail uzerinden kullanici istegiyle gorev olusturur.
 ' Mail gondermez, silmez, tasimaz. Eski takipleri aktarmaya CALISMAZ.
 ' Kayitlar Outlook > Gorevler > Takip Kolay alt klasorunde saklanir.
@@ -157,7 +157,7 @@ KayitTamam:
     If hatali > 0 Then html = html & "<p style='color:#a33'>" & hatali & " kayit okunamadi; digerleri listelendi.</p>"
     If acik > listelenen Then html = html & "<p style='color:#a76a00'>Ilk 300 acik is gosteriliyor.</p>"
     html = html & "<div style='padding:15px 0 0;border-top:1px solid #e5e9ef;font-size:12px;color:#64748b'>" & _
-           "Bu bir önizlemedir. Otomatik gönderilmez. Yazýþma içerikleri yalnýzca yerel Outlook'tan okunur. " & _
+           "Bu rapor gönderilmez. E-postalar Outlook hesabýndan okunur; kurumsal eþitleme uygulanabilir. " & _
            "Yanýtlarý kontrol etmek için Takip_4_YanitlariKontrolEt komutunu kullanin." & _
            "</div></td></tr></table></td></tr></table></body></html>"
 
@@ -364,52 +364,128 @@ Hata:
     HataGoster "Tarih degistirme"
 End Sub
 
-' Kullanici karar vermeden hatirlatma veya vade olusturulmaz.
-' "YOK" secenegi, hatirlatmasiz ve tarihsiz takip olusturur.
+' v0.8.3: Hatirlatma kesinlikle otomatik secilmez.
+' 1/2/3/4 hizli secimleri ve 5 ozel tarih, 0 tarihsiz takip.
+' Bos giris veya Iptal = hicbir degisiklik yapma.
 Private Function TarihSor(ByRef varMi As Boolean, ByRef bitis As Date, _
                           ByRef uyari As Date) As Boolean
-    Dim veri As String, bolum() As String, tarih() As String, saat() As String
-    Dim gg As Long, aa As Long, yyyy As Long, ss As Long, dd As Long
-    Dim kontrol As Date
-    veri = Trim$(InputBox("Hatirlatma tarihi ve saatini siz belirleyin." & vbCrLf & _
-         "Ornek: 24.11.2026 14:30" & vbCrLf & _
-         "Tarih olmadan takip icin YOK yazin." & vbCrLf & _
-         "Vazgecmek icin Iptal veya bos birakin.", _
-         "Takip / Hatirlatma zamani", ""))
-    If Len(veri) = 0 Then Exit Function
-    If UCase$(veri) = "YOK" Then
-        varMi = False
+    On Error GoTo Hata
+    Dim veri As String, deneme As Long
+    Dim secilen As Date
+    varMi = False
+    bitis = 0
+    uyari = 0
+
+    For deneme = 1 To 3
+        veri = Trim$(InputBox( _
+             "Hatirlatma zamani secin (yalnizca sizin seciminiz kaydedilir):" & vbCrLf & vbCrLf & _
+             "1 - 1 saat sonra" & vbCrLf & _
+             "2 - Yarin 09:00" & vbCrLf & _
+             "3 - 3 gun sonra 09:00" & vbCrLf & _
+             "4 - 1 hafta sonra 09:00" & vbCrLf & _
+             "5 - Ozel tarih ve saat" & vbCrLf & _
+             "0 - Tarih ve hatirlatma olmadan kaydet" & vbCrLf & vbCrLf & _
+             "Bos birakin veya Iptal'e basin: vazgec.", _
+             "Is ve Yanit Radari - Hatirlatma", ""))
+        If Len(veri) = 0 Then Exit Function
+
+        Select Case UCase$(veri)
+            Case "0", "YOK"
+                TarihSor = True
+                Exit Function
+            Case "1"
+                secilen = DateAdd("h", 1, Now)
+            Case "2"
+                secilen = DateAdd("d", 1, Date) + TimeSerial(9, 0, 0)
+            Case "3"
+                secilen = DateAdd("d", 3, Date) + TimeSerial(9, 0, 0)
+            Case "4"
+                secilen = DateAdd("d", 7, Date) + TimeSerial(9, 0, 0)
+            Case "5"
+                If Not OzelTarihSor(secilen) Then Exit Function
+            Case Else
+                ' Deneyimli kullanicilar dogrudan 18.11 14:30 da yazabilir.
+                If Not TarihMetniniCoz(veri, secilen) Then GoTo YanlisSecim
+        End Select
+
+        If secilen <= Now Then GoTo YanlisSecim
+        bitis = DateSerial(Year(secilen), Month(secilen), Day(secilen))
+        uyari = secilen
+        varMi = True
         TarihSor = True
         Exit Function
-    End If
-
-    On Error GoTo Hata
-    veri = Replace(veri, "/", ".")
-    bolum = Split(veri, " ")
-    If UBound(bolum) <> 1 Then GoTo Hata
-    tarih = Split(bolum(0), ".")
-    saat = Split(bolum(1), ":")
-    If UBound(tarih) <> 2 Or UBound(saat) <> 1 Then GoTo Hata
-    If Not SayiMi(tarih(0)) Or Not SayiMi(tarih(1)) Or Not SayiMi(tarih(2)) Then GoTo Hata
-    If Not SayiMi(saat(0)) Or Not SayiMi(saat(1)) Then GoTo Hata
-    gg = CLng(tarih(0)): aa = CLng(tarih(1)): yyyy = CLng(tarih(2))
-    ss = CLng(saat(0)): dd = CLng(saat(1))
-    If yyyy < 2020 Or yyyy > 2100 Or aa < 1 Or aa > 12 Then GoTo Hata
-    If gg < 1 Or gg > 31 Or ss < 0 Or ss > 23 Or dd < 0 Or dd > 59 Then GoTo Hata
-    kontrol = DateSerial(yyyy, aa, gg)
-    If Year(kontrol) <> yyyy Or Month(kontrol) <> aa Or Day(kontrol) <> gg Then GoTo Hata
-    uyari = kontrol + TimeSerial(ss, dd, 0)
-    If uyari <= Now Then
-        MsgBox "Gecmis tarih veya saat secilemez. Islem iptal edildi.", vbExclamation
-        Exit Function
-    End If
-    bitis = kontrol
-    varMi = True
-    TarihSor = True
+YanlisSecim:
+        MsgBox "Secim veya tarih anlasilamadi. Lutfen yeniden deneyin." & vbCrLf & _
+               "Ornek: 5 ya da 20.11.2026 15:30", vbExclamation, "Hatirlatma"
+    Next deneme
     Exit Function
 Hata:
-    MsgBox "Tarih anlasilamadi. Ornek: 24.11.2026 14:30" & vbCrLf & _
-           "Kayit yapilmadi. Lutfen komutu yeniden calistirin.", vbExclamation, "Outlook Ýþ ve Yanýt Radarý"
+    MsgBox "Hatirlatma tarihi secilemedi. Islem kaydedilmedi." & vbCrLf & _
+           "Hata " & Err.Number & ": " & Err.Description, vbExclamation, "Hatirlatma"
+End Function
+
+' Sadece secim 5 ile acilir. Takvim kontrolu / ActiveX kurulumu gerekmez.
+Private Function OzelTarihSor(ByRef sonuc As Date) As Boolean
+    Dim veri As String, deneme As Long
+    For deneme = 1 To 3
+        veri = Trim$(InputBox( _
+               "Tarih yazin: 25.11 veya 25.11.2026" & vbCrLf & _
+               "Saat ekleyin: 25.11 15:30" & vbCrLf & _
+               "Saat yazmazsaniz 09:00 secilir." & vbCrLf & _
+               "Bos birakin / Iptal: kaydi degistirme.", _
+               "Ozel tarih ve saat", Format$(DateAdd("d", 1, Date), "dd.mm.yyyy") & " 09:00"))
+        If Len(veri) = 0 Then Exit Function
+        If TarihMetniniCoz(veri, sonuc) Then
+            OzelTarihSor = True
+            Exit Function
+        End If
+        MsgBox "Tarih gecmis, hatali veya anlasilamadi." & vbCrLf & _
+               "Ornek: 25.11 15:30", vbExclamation, "Hatirlatma"
+    Next deneme
+End Function
+
+' Turkce bolgesel ayarlardan bagimsiz tarih cozumleme.
+' gg.aa / gg.aa.yyyy veya bunlarin sonuna SS:DD kabul edilir.
+Private Function TarihMetniniCoz(ByVal veri As String, ByRef sonuc As Date) As Boolean
+    On Error GoTo Gecersiz
+    Dim bolum() As String, tarih() As String, saat() As String
+    Dim gg As Long, aa As Long, yyyy As Long, ss As Long, dd As Long
+    Dim gun As Date
+
+    veri = Replace(Trim$(veri), "/", ".")
+    Do While InStr(veri, "  ") > 0
+        veri = Replace(veri, "  ", " ")
+    Loop
+    bolum = Split(veri, " ")
+    If UBound(bolum) > 1 Then Exit Function
+    tarih = Split(bolum(0), ".")
+    If UBound(tarih) <> 1 And UBound(tarih) <> 2 Then Exit Function
+    If Not SayiMi(tarih(0)) Or Not SayiMi(tarih(1)) Then Exit Function
+    gg = CLng(tarih(0))
+    aa = CLng(tarih(1))
+    yyyy = Year(Date)
+    If UBound(tarih) = 2 Then
+        If Not SayiMi(tarih(2)) Or Len(tarih(2)) <> 4 Then Exit Function
+        yyyy = CLng(tarih(2))
+    End If
+    ss = 9
+    dd = 0
+    If UBound(bolum) = 1 Then
+        saat = Split(bolum(1), ":")
+        If UBound(saat) <> 1 Then Exit Function
+        If Not SayiMi(saat(0)) Or Not SayiMi(saat(1)) Then Exit Function
+        ss = CLng(saat(0))
+        dd = CLng(saat(1))
+    End If
+    If yyyy < 2020 Or yyyy > 2100 Then Exit Function
+    If aa < 1 Or aa > 12 Or gg < 1 Or gg > 31 Then Exit Function
+    If ss < 0 Or ss > 23 Or dd < 0 Or dd > 59 Then Exit Function
+    gun = DateSerial(yyyy, aa, gg)
+    If Year(gun) <> yyyy Or Month(gun) <> aa Or Day(gun) <> gg Then Exit Function
+    sonuc = gun + TimeSerial(ss, dd, 0)
+    If sonuc <= Now Then Exit Function
+    TarihMetniniCoz = True
+Gecersiz:
 End Function
 
 Private Function SayiMi(ByVal x As String) As Boolean
@@ -536,7 +612,7 @@ Private Sub YeniTakip(ByVal isKodu As String)
     Dim m As Outlook.MailItem, gorev As Outlook.TaskItem
     Dim varMi As Boolean, bitis As Date, uyari As Date
     Dim kisi As String, kayitKlasoru As Outlook.MAPIFolder
-    Dim metin As String, mesaj As String
+    Dim mesaj As String
     Set m = SecilenMail()
     If m Is Nothing Then
         MsgBox "Once bir e-posta secin, sonra takip komutunu calistirin.", vbInformation, "Outlook Ýþ ve Yanýt Radarý"
@@ -560,10 +636,11 @@ Private Sub YeniTakip(ByVal isKodu As String)
     Set kayitKlasoru = TakipKlasoru()
     Set gorev = kayitKlasoru.Items.Add(olTaskItem)
     gorev.Subject = "[Takip] " & Left$(m.Subject, 220)
-    metin = Left$(m.Body, 10000)
-    gorev.Body = "Kaynak e-posta konusu: " & m.Subject & vbCrLf & _
-                 "Ilgili kisi: " & kisi & vbCrLf & _
-                 ICERIK_AYRAC & vbCrLf & metin
+    ' v0.8: E-posta metnini gorev kaydinda cogaltmayiz.
+    ' Yazisma, kaynak Outlook e-postasindan ihtiyac halinde okunur.
+    gorev.Body = "Kaynak e-posta konusu: " & Left$(m.Subject, 220) & vbCrLf & _
+                 "Ilgili kisi: " & Left$(kisi, 180) & vbCrLf & _
+                 "Not: Kaynak yazisma Outlook hesabindan okunur."
     gorev.Status = olTaskNotStarted
     Uyarla gorev, varMi, bitis, uyari
     AlanYaz gorev, ALAN_DURUM, isKodu
@@ -700,32 +777,63 @@ End Function
 
 Private Function TakipMetni(ByVal t As Outlook.TaskItem, ByVal limit As Long) As String
     On Error GoTo Bitti
-    Dim m As Outlook.MailItem, icerik As String, yer As Long
-    ' Rapor icin yanit gelmisse son mesajin metni one ciksin.
+    Dim kaynak As Outlook.MailItem, yanit As Outlook.MailItem
+    Dim icerik As String, metin As String, yer As Long
+
+    ' Yeni takiplerde mesaji yalnizca Outlook'taki orijinal kaynaktan okur.
+    ' Yaniti ozetlerken en son yakalanan yanit one cikar.
     If limit < 8000 Then
+        Set yanit = KaynakYaniti(t)
+        If Not yanit Is Nothing Then icerik = "Yakalanan yanit:" & vbCrLf & yanit.Body
+    End If
+
+    ' Geriye donuk uyumluluk: v0.7.1 ve onceki kayitlarda kopya metin olabilir.
+    If Len(Trim$(icerik)) = 0 Then
         yer = InStr(1, t.Body, YANIT_AYRAC, vbTextCompare)
-        If yer > 0 Then
-            icerik = "Gelen yanit: " & Mid$(t.Body, yer + Len(YANIT_AYRAC))
+        If yer > 0 And limit < 8000 Then
+            icerik = "Kayitli yanit:" & Mid$(t.Body, yer + Len(YANIT_AYRAC))
         End If
     End If
-    ' Yeni gorevlerde kayitli orijinal metin Outlook'u tekrar tekrar acmaz.
     If Len(Trim$(icerik)) = 0 Then
         yer = InStr(1, t.Body, ICERIK_AYRAC, vbTextCompare)
         If yer > 0 Then icerik = Mid$(t.Body, yer + Len(ICERIK_AYRAC))
     End If
-    ' Eski gorevlerde veya kapsamli taslakta orijinal e-postaya bak.
+
+    ' Taslak icin kaynak mesaj ve yakalanmis son yanit birlikte kullanilir.
     If Len(Trim$(icerik)) = 0 Or limit >= 8000 Then
-        Set m = KaynakMail(t)
-        If Not m Is Nothing Then
-            If Len(Trim$(m.Body)) > 0 Then icerik = m.Body
+        Set kaynak = KaynakMail(t)
+        If Not kaynak Is Nothing Then
+            icerik = kaynak.Body
+        End If
+        If limit >= 8000 Then
+            Set yanit = KaynakYaniti(t)
+            If Not yanit Is Nothing Then
+                If Len(Trim$(icerik)) > 0 Then icerik = icerik & vbCrLf & vbCrLf
+                icerik = icerik & "--- YAKALANAN GELEN YANIT ---" & vbCrLf & yanit.Body
+            End If
         End If
     End If
+
     If Len(Trim$(icerik)) = 0 Then
-        ' v0.6 ile olusturulan eski gorevlerde orijinal icerik saklanmamis olabilir.
-        icerik = "Kaynak yazisma metni bulunamadi."
+        icerik = "Kaynak yazismaya erisilemiyor. E-posta tasinmis ya da silinmis olabilir."
     End If
     If Len(icerik) > limit Then icerik = Left$(icerik, limit) & vbCrLf & "[Devami kisaltildi]"
     TakipMetni = icerik
+Bitti:
+End Function
+
+Private Function KaynakYaniti(ByVal gorev As Outlook.TaskItem) As Outlook.MailItem
+    On Error GoTo Bitti
+    Dim nesne As Object, kimlik As String, posta As String
+    kimlik = AlanOku(gorev, "TKReplyID")
+    posta = AlanOku(gorev, "TKReplyStore")
+    If Len(kimlik) = 0 Then Exit Function
+    If Len(posta) > 0 Then
+        Set nesne = Application.Session.GetItemFromID(kimlik, posta)
+    Else
+        Set nesne = Application.Session.GetItemFromID(kimlik)
+    End If
+    If TypeOf nesne Is Outlook.MailItem Then Set KaynakYaniti = nesne
 Bitti:
 End Function
 
@@ -826,9 +934,10 @@ Private Function YanitEslesir(ByVal mail As Outlook.MailItem, ByVal beklenen As 
     If BenimMesajim(mail) Then Exit Function
     AlanYaz gorev, ALAN_DURUM, KONTROL
     gorev.Status = olTaskInProgress
-    ' Gelen yanit, kullanicinin secmis oldugu tarihi asla degistirmez.
-    gorev.Body = Left$(gorev.Body, 12000) & vbCrLf & vbCrLf & YANIT_AYRAC & vbCrLf & _
-                 Left$(mail.Body, 4500)
+    ' Gelen yanit metni goreve kopyalanmaz. Yalnizca kaynak kimlikleri saklanir.
+    ' Kullanicinin secmis oldugu tarih degistirilmez.
+    AlanYaz gorev, "TKReplyID", mail.EntryID
+    AlanYaz gorev, "TKReplyStore", mail.Parent.StoreID
     gorev.Save
     beklenen.Remove sohbet
     YanitEslesir = True

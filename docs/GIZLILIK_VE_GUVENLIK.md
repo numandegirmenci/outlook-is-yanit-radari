@@ -1,16 +1,26 @@
-# Gizlilik ve güvenlik
+# Gizlilik ve güvenlik — v0.8.3
 
-Bu proje Classic Outlook VBA içinde çalışır. **Harici bir analiz servisine posta içeriği gönderen bağlantı kodu içermez.** Buna rağmen 'tamamen yerel/veri dışarı çıkmaz' demek yanıltıcı olur:
+Bu yazılım, klasik Outlook'un kendi VBA ortamında çalışmak üzere hazırlanmış açık kaynaklı bir araçtır. Bağımsız bir iş takip hesabı ya da geliştiricinin sunucusunu gerektirmez.
 
-- Yeni takip oluşturulurken kaynak e-posta metninden **en fazla 10.000 karakter**, Outlook görev kaydının `Body` alanına kopyalanır.
-- Yanıt bulunduğunda görev içine yanıt metninden de bölüm kaydedilebilir.
-- Görev kayıtları varsayılan Outlook Görevler hesabındadır. Exchange/Microsoft 365 senkronizasyonuna açıksa bu veriler ilgili **kurumsal Microsoft sunucularına** senkronize olur.
-- Rapor e-posta içeriğinden özetler gösterir ve Outlook'un **gönderilmeyen** compose penceresinde açılır. Yanlışlıkla kullanıcı tarafından gönderilmesine karşı raporda alıcı belirtmeyin.
-- Hatırlatma e-postası bir **taslak** olarak açılır; makro kendisi `Send` çağrısı yapmaz. Taslağın alıcısını, geçmiş yazışmayı ve eki olup olmadığını kullanıcının kontrol etmesi gerekir.
-- VBA projesini bilinmeyen kaynaklardan çalıştırmayın. Önce kodu inceleyin ve kaynağı doğrulayın; kuruluş politikasını aşmayın.
+## Üçüncü taraflara aktarım
 
-## Sorun bildirirken
+Kaynak kodda kullanıcı e-postalarını **Notion, Trello, reklam, analiz, telemetri veya geliştirici sunucularına göndermek** için bir bağlantı bulunmaz. Bu, bağımsız dış hizmete otomatik aktarım yapılmaması hedefidir; kurum genelinde onaylanmış güvenlik incelemesinin yerine geçmez.
 
-Gerçek e-postaları, ekleri, müşteri/satıcı isimlerini, e-posta adreslerini, sözleşmeleri, fatura veya kurumsal belgeleri GitHub Issues üzerine **yüklemeyin**. Hata bilgisini kişisel verilerden arındırın.
+## Outlook/Exchange içinde saklananlar
 
-Bu yazılım **pilot** niteliğindedir; hassas/kurumsal verilerde kullanımı kurum iznine tabidir.
+- Yeni takip kaydında durum, kaynak e-posta kimliği, kişi, konu, zaman bilgisi ve benzeri takip üstverileri Outlook **Görevler / Takip Kolay** klasörüne yazılır.
+- **v0.8 ve sonrasında yeni görev oluşturulurken** e-posta gövdesi ayrıca görev içine kopyalanmaz. Gelen yanıtların gövdesi yerine, yakalanan yanıt kimliği saklanır ve metni gerektiğinde Outlook'tan okunur.
+- **Eski sürümlerden kalan görevler** e-posta metni içeriyor olabilir; güncelleme bunları kendiliğinden temizlemez.
+- Görevler, e-postalar ve Outlook tarafından kaydedilen taslaklar **Exchange/Microsoft 365 üzerinden şirketin var olan Microsoft altyapısıyla eşitlenebilir**. Buna "tamamen yerel, cihazdan hiç çıkmıyor" denemez.
+- HTML rapor bir Outlook e-posta düzenleme penceresi olarak görüntülenir. Makro otomatik göndermez; kullanıcı yanlışlıkla gönderebilir veya Outlook taslağı senkronize edebilir.
+- Kaynak e-posta taşınmış ya da silinmişse bağlantı açılamayabilir; bu durumda eski bir görev kaydı korunur.
+
+## Kullanıcı kontrolü
+
+Kullanıcı onayı olmadan mail gönderme, silme veya taşıma özelliği eklenmedi. Hatırlatma taslakları kullanıcıya gösterilir; alıcı ve metin kontrol edilmelidir. Kurumsal makro kısıtları aşılmamalıdır.
+
+## Hata bildirimi
+
+GitHub Issues üzerinde **gerçek e-posta, belge, şirket adı, müşteri bilgisi, kimlik, ekran görüntüsündeki gizli alanlar veya adres** paylaşma. Hata bildirirken örnek/anonimleştirilmiş veriler kullan.
+
+**Durum:** Beta, kurumun güvenlik/onay sürecinden geçmiş bir ürün olduğu iddia edilmez.
