@@ -26,18 +26,22 @@ Kurumsal bilgisayarında yeni bir SaaS hesabı açamayan, Notion/Trello ile ente
 - **Hata raporları:** Gerçek e-posta içeriklerini veya müşteri kimliklerini GitHub Issues'a koyma; yalnızca kişisel verilerden arındırılmış hatalar kullan.
 - **Rapor riski:** Outlook'ta gönderilmeyen e-posta taslağı olarak açılan rapor, otomatik taslak kaydı nedeniyle kurumsal posta kutusunda tutulabilir; daha az kopyalama için yerel rapor görünümü seçeneği değerlendirilecek.
 
-## V0.7'de gerçekten durum ne?
+## v0.8.3 Genel Beta'da mevcut durum
 
-Mevcut kod Outlook VBA üzerinde çalışır ve doğrudan bir üçüncü taraf HTTP bağlantısı için tasarlanmamıştır; bir kurumsal güvenlik sertifikası veya eksiksiz denetim sunmuyoruz. Kaynak e-posta metninin 10.000 karakterine kadar olan bölümünü görev gövdesine, gelen yanıtın 4.500 karakterine kadar olan kısmını da aynı kayda kopyalayabilir. İşlerim raporu Outlook compose penceresinde açılır.
-
-Bu nedenle **"Hiçbir veri bilgisayardan çıkmaz"** iddiası V0.7 için kullanılmamalıdır.
+- Klasik Outlook VBA ile e-postadan görev oluşturma, hızlı hatırlatma seçimi ve **İş Masam** adlı gruplu görev listesi kodlandı.
+- **v0.8 ve sonrasında oluşturulan yeni görevlerde**, kaynak e-posta gövdesi tekrar kopyalanmaz; kimlik ve takip bilgileri kaydedilir. Yakalanan yanıtın içeriği de görev içine tekrar kopyalanmaz; e-posta gerektiğinde Outlook'tan okunur.
+- Daha eski takiplerde kopyalanmış yazışma içeriği bulunabilir. Güncelleme bu içeriği otomatik silmez.
+- Outlook görev ve e-postaları Exchange/Microsoft 365 ile senkronize olabilir; **"tamamen yerel, hiç dışarı çıkmaz"** şeklinde iddia edilmez.
+- E-posta metni harici bir iş takip hizmetine gönderilmek üzere tasarlanmamıştır; bu bir kurumsal güvenlik sertifikası değildir.
+- HTML "İşlerim" raporu yine gönderilmeyen Outlook ileti penceresinde açılır; bu pencere Outlook tarafından taslak olarak tutulabilir.
+- Bu sürüm kaynak kod olarak yayımlanmıştır ancak tüm işlevleri her Outlook kurulumunda **canlı olarak uçtan uca doğrulanmış değildir**.
 
 ## Öncelikli geliştirmeler
 
-1. V0.7'nin takip oluşturma / rapor / yanıt eşleştirme akışını farklı klasik Outlook kurulumlarında test et ve hata kayıtlarını düzelt.
-2. Görev içindeki kopyalanmış e-posta içeriğini kaldırıp, kaynağa güvenli referansla gerektiğinde eriş.
-3. Düşük maliyetli ve Outlook'u kilitlemeyen 45 günlük artımlı yanıt kontrolü.
-4. Tek panelde sade iş durumları ve anlaşılır kullanıcı dili.
-5. Kurumsal dağıtım için imza, izin ve kurulum belgelerini tamamla.
+1. v0.8.3 hızlı tarih seçimi, görev kategorileri, kaynak yazışma ve yanıt tespiti özelliklerini gerçek Outlook'ta test edip sorunları düzeltmek.
+2. Görev yönetimini daha az makro adıyla ve daha anlaşılır bir arayüzle sunmak.
+3. Kaynak e-postalar yer değiştirirse kırılan kimlik referanslarını güvenli biçimde ele almak.
+4. Veri minimizasyonunu ve kurumsal izin/sürüm dağıtımı süreçlerini iyileştirmek.
+5. İmzalı kurumsal kurulum ve güçlü test altyapısını değerlendirmek.
 
-Bu belge hedef ürün kararlarıdır; henüz uygulanmamış özellikler çalışan V0.7 özelliği olarak sunulmaz.
+**Bu belge hedef ürün ilkelerini ve bugünkü beta sürümünü birbirinden ayırır.**
