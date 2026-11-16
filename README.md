@@ -90,7 +90,7 @@ Detaylar: [Gizlilik ve güvenlik](docs/GIZLILIK_VE_GUVENLIK.md).
 
 Bu bir **beta** sürümüdür; bazı özellikler farklı Outlook kurulumlarında hatalı çalışabilir. İş Masam tek gruplu Outlook görev görünümünü kullanır; eski filtreli görünümlerin Outlook tarafından reddedildiği durumlar yaşandı. Kaynak e-posta taşındıysa kimliği değişebilir ve bağlantı açılamayabilir. Yanıt kontrolü 45 günlük ve performans sınırları nedeniyle her yanıtı bulmayı garanti etmez. Kurumun makro politikalarını aşmaya çalışmayın.
 
-**Proje Microsoft'a ait resmi bir ürün değildir.** Hata ve geliştirme önerilerini kişisel/kurumsal bilgileri çıkartarak [GitHub Issues](../../issues) üzerinden paylaşabilirsin.
+**Proje Microsoft'a ait resmi bir ürün değildir.** Hata ve geliştirme önerilerini kişisel/kurumsal bilgileri çıkartarak [GitHub Issues](https://github.com/numandegirmenci/outlook-is-yanit-radari/issues) üzerinden paylaşabilirsin.
 
 ## Projenin durumu
 
