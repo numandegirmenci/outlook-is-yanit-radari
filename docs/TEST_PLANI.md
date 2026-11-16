@@ -29,3 +29,12 @@
 Elle kontrol: son 45 gün, en fazla 80 klasör, klasör başına 200 e-posta, yaklaşık 10 saniyelik bütçe.
 
 Açılış kontrolü: son 45 gün, 30 klasör, klasör başına 80 e-posta, yaklaşık 3 saniyelik bütçe. **Bu kapsam eksiksiz tarama garantisi değildir.**
+
+
+## v0.7.1 kontrolü
+
+1. Tarihi geçmiş bir e-postayı **Yapacağım İş** olarak kaydedin; raporda **Yapılacak İşler** altında görünmeli.
+2. Aynı e-postayı **Yanıt Bekliyorum** olarak kaydedin; iki ayrı görev oluşmalı.
+3. `Takip_10_DurumleriKontrolEt` sayıları raporla karşılaştırın.
+4. Yeni makroyu import etmeden eski modülü yedekleyin. `ThisOutlookSession` dosyası değişmedi.
+5. Farklı Outlook kurulumlarında VBA compile ve canlı akış testleri tamamlanmadan v1.0 kararlı demeyin.

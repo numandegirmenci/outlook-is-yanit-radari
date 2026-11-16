@@ -1,7 +1,7 @@
 Attribute VB_Name = "TakipKolay"
 Option Explicit
 
-' OUTLOOK ÝÞ VE YANIT RADARI - Klasik Outlook, PILOT v0.7
+' OUTLOOK ÝÞ VE YANIT RADARI - Klasik Outlook, PILOT v0.7.1
 ' Yalnizca secilen mail uzerinden kullanici istegiyle gorev olusturur.
 ' Mail gondermez, silmez, tasimaz. Eski takipleri aktarmaya CALISMAZ.
 ' Kayitlar Outlook > Gorevler > Takip Kolay alt klasorunde saklanir.
@@ -48,7 +48,7 @@ Public Sub Takip_3_Islerim()
     Dim toplam As Long, acik As Long, tamam As Long, hatali As Long
     Dim yanit As Long, yapilacak As Long, incelenecek As Long
     Dim geciken As Long, bugun As Long, tarihsiz As Long, listelenen As Long
-    Dim sGec As String, sKontrol As String, sBugun As String
+    Dim sKontrol As String
     Dim sYanit As String, sYap As String, sDiger As String
     Dim asama As String, vadeVar As Boolean, isGec As Boolean, isBugun As Boolean
 
@@ -94,20 +94,24 @@ Public Sub Takip_3_Islerim()
                 End Select
 
                 If listelenen < 300 Then
-                    satir = RaporSatiri(konu, kisi, tarihEtiketi, kod, ozet)
+                    ' Her kayit durumuna gore YALNIZCA ilgili kategoride gorunur.
+                    ' Gecikmis veya bugunku tarih, kategoriyi degistirmez.
                     If isGec Then
-                        sGec = sGec & satir
-                    ElseIf kod = KONTROL Then
-                        sKontrol = sKontrol & satir
+                        tarihEtiketi = "GECIKTI - " & tarihEtiketi
                     ElseIf isBugun Then
-                        sBugun = sBugun & satir
-                    ElseIf kod = BEKLIYOR Then
-                        sYanit = sYanit & satir
-                    ElseIf kod = YAPILACAK Then
-                        sYap = sYap & satir
-                    Else
-                        sDiger = sDiger & satir
+                        tarihEtiketi = "BUGUN - " & tarihEtiketi
                     End If
+                    satir = RaporSatiri(konu, kisi, tarihEtiketi, kod, ozet)
+                    Select Case kod
+                        Case YAPILACAK
+                            sYap = sYap & satir
+                        Case BEKLIYOR
+                            sYanit = sYanit & satir
+                        Case KONTROL
+                            sKontrol = sKontrol & satir
+                        Case Else
+                            sDiger = sDiger & satir
+                    End Select
                     listelenen = listelenen + 1
                 End If
             End If
@@ -144,11 +148,10 @@ KayitTamam:
     If acik = 0 Then
         html = html & "<p style='padding:16px;background:#ecfdf3;color:#24643f'>Acik takip bulunamadi.</p>"
     Else
-        html = html & RaporBolumu("Gecikenler", sGec, "#b42318")
-        html = html & RaporBolumu("Yanýt geldi - kontrol edilecek", sKontrol, "#ae6d00")
-        html = html & RaporBolumu("Bugun kontrol edilecek", sBugun, "#285ba6")
-        html = html & RaporBolumu("Yanýt bekleyenler", sYanit, "#285ba6")
+        ' Once tum yapilacaklari goster; tarih etiketi kaydi gizlemez.
         html = html & RaporBolumu("Yapýlacak iþler", sYap, "#117153")
+        html = html & RaporBolumu("Yanýt bekleyenler", sYanit, "#285ba6")
+        html = html & RaporBolumu("Yanýt geldi - kontrol edilecek", sKontrol, "#ae6d00")
         html = html & RaporBolumu("Diðer açýk iþler", sDiger, "#44556a")
     End If
     If hatali > 0 Then html = html & "<p style='color:#a33'>" & hatali & " kayit okunamadi; digerleri listelendi.</p>"
@@ -312,7 +315,7 @@ Public Sub Takip_5_Tamamlandi()
         Set gorev = MailTakibi(nesne)
     End If
     If gorev Is Nothing Then
-        MsgBox "Bu e-posta veya görev için açýk takip bulunamadý.", vbInformation, "Outlook Ýþ ve Yanýt Radarý"
+        MsgBox "Açýk takip bulunamadý. Ayný yazýþmada birden fazla takip varsa Görevler > Takip Kolay içinden ilgili görevi seçin.", vbInformation, "Outlook Ýþ ve Yanýt Radarý"
         Exit Sub
     End If
     If Durum(gorev) = BITTI Then
@@ -348,7 +351,7 @@ Public Sub Takip_6_TarihiDegistir()
         Set gorev = MailTakibi(nesne)
     End If
     If gorev Is Nothing Then
-        MsgBox "Bu secime ait bir takip bulunamadi.", vbInformation
+        MsgBox "Takip bulunamadý. Ayný yazýþmada birden fazla takip varsa Görevler > Takip Kolay içinden ilgili görevi seçin.", vbInformation
         Exit Sub
     End If
     If Durum(gorev) = BITTI Then Exit Sub
@@ -482,6 +485,40 @@ Hata:
     HataGoster "Sistem kontrolü"
 End Sub
 
+
+' 10) Tum durumlarin ayni gorev klasorunde tutuldugunu dogrular.
+Public Sub Takip_10_DurumleriKontrolEt()
+    On Error GoTo Hata
+    Dim nesne As Object, gorev As Outlook.TaskItem, kod As String
+    Dim bekleyen As Long, yapilacak As Long, incelenecek As Long
+    Dim tamamlanan As Long, diger As Long, toplam As Long
+    For Each nesne In TakipKlasoru().Items
+        If toplam >= KAYIT_SINIRI Then Exit For
+        If TypeOf nesne Is Outlook.TaskItem Then
+            Set gorev = nesne
+            toplam = toplam + 1
+            kod = Durum(gorev)
+            Select Case kod
+                Case BEKLIYOR: bekleyen = bekleyen + 1
+                Case YAPILACAK: yapilacak = yapilacak + 1
+                Case KONTROL: incelenecek = incelenecek + 1
+                Case BITTI: tamamlanan = tamamlanan + 1
+                Case Else: diger = diger + 1
+            End Select
+        End If
+    Next nesne
+    MsgBox "Toplam takip: " & toplam & vbCrLf & _
+           "Yapilacak is: " & yapilacak & vbCrLf & _
+           "Yanit bekleniyor: " & bekleyen & vbCrLf & _
+           "Incelenecek: " & incelenecek & vbCrLf & _
+           "Tamamlandi: " & tamamlanan & vbCrLf & _
+           "Diger: " & diger & vbCrLf & vbCrLf & _
+           "Kayitlar degistirilmedi.", vbInformation, "Is ve Yanit Radari - Durum Kontrolu"
+    Exit Sub
+Hata:
+    HataGoster "Durum kontrolu"
+End Sub
+
 Private Function BizimGorevimiz(ByVal t As Outlook.TaskItem) As Boolean
     On Error GoTo Bitti
     If t Is Nothing Then Exit Function
@@ -509,7 +546,8 @@ Private Sub YeniTakip(ByVal isKodu As String)
         MsgBox "Bu e-posta henuz kaydedilmemis. Once kaydedin.", vbExclamation
         Exit Sub
     End If
-    Set gorev = MailTakibi(m)
+    ' Ayný yazismada WAIT ve TODO ayri gorevler olarak tutulabilir.
+    Set gorev = MailTakibi(m, isKodu)
     If Not gorev Is Nothing Then
         MsgBox "Bu yazisma zaten takipte.", vbInformation, "Outlook Ýþ ve Yanýt Radarý"
         gorev.Display
@@ -582,10 +620,12 @@ Private Function SecilenMail() As Outlook.MailItem
     End If
 End Function
 
-Private Function MailTakibi(ByVal m As Outlook.MailItem) As Outlook.TaskItem
+Private Function MailTakibi(ByVal m As Outlook.MailItem, _
+                            Optional ByVal istenenDurum As String = "") As Outlook.TaskItem
     On Error GoTo Bitti
     Dim nesne As Object, t As Outlook.TaskItem, n As Long
-    Dim id As String, sohbet As String
+    Dim id As String, sohbet As String, durumKodu As String
+    Dim uygun As Boolean, eslesen As Long, ilk As Outlook.TaskItem
     id = m.EntryID
     sohbet = m.ConversationID
     For Each nesne In TakipKlasoru().Items
@@ -593,18 +633,31 @@ Private Function MailTakibi(ByVal m As Outlook.MailItem) As Outlook.TaskItem
         If n > KAYIT_SINIRI Then Exit For
         If TypeOf nesne Is Outlook.TaskItem Then
             Set t = nesne
-            If Durum(t) <> BITTI Then
-                If Len(id) > 0 And AlanOku(t, ALAN_KAYNAK) = id Then
-                    Set MailTakibi = t
-                    Exit Function
-                End If
-                If Len(sohbet) > 0 And AlanOku(t, ALAN_SOHBET) = sohbet Then
-                    Set MailTakibi = t
-                    Exit Function
+            durumKodu = Durum(t)
+            If durumKodu <> BITTI Then
+                If Len(istenenDurum) = 0 Or durumKodu = istenenDurum Then
+                    uygun = False
+                    If Len(id) > 0 And AlanOku(t, ALAN_KAYNAK) = id Then
+                        uygun = True
+                    ElseIf istenenDurum <> YAPILACAK And Len(sohbet) > 0 Then
+                        ' Bir yanit bekleme takibi ayni konusma icin tek olabilir.
+                        uygun = (AlanOku(t, ALAN_SOHBET) = sohbet)
+                    End If
+                    If uygun Then
+                        eslesen = eslesen + 1
+                        If eslesen = 1 Then Set ilk = t
+                        If Len(istenenDurum) > 0 Then
+                            Set MailTakibi = t
+                            Exit Function
+                        End If
+                    End If
                 End If
             End If
         End If
     Next nesne
+    ' Bir konusmada farkli takipler varsa yanlis gorevi otomatik secme.
+    ' Tamamlama / tarih degistirme icin ilgili Gorevler kaydi secilmeli.
+    If eslesen = 1 Then Set MailTakibi = ilk
 Bitti:
 End Function
 
@@ -836,10 +889,10 @@ Public Sub Takip_8_HatirlatmaTaslagi()
         Set gorev = secim
         If Not BizimGorevimiz(gorev) Then Set gorev = Nothing
     ElseIf TypeOf secim Is Outlook.MailItem Then
-        Set gorev = MailTakibi(secim)
+        Set gorev = MailTakibi(secim, BEKLIYOR)
     End If
     If gorev Is Nothing Then
-        MsgBox "Secili e-postaya ait takip bulunamadi.", vbInformation
+        MsgBox "Secili e-postaya ait yanit bekleyen takip bulunamadi.", vbInformation
         Exit Sub
     End If
     If Durum(gorev) <> BEKLIYOR Then

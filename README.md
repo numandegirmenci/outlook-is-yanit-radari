@@ -2,7 +2,7 @@
 
 **Klasik Outlook için ücretsiz, açık kaynaklı e-posta ve iş takip makroları.** Gönderdiğiniz bir e-postanın yanıtını beklerken veya gelen bir e-postaya ilişkin yapacağınız işi takip ederken Excel doldurmanız gerekmez.
 
-> **Durum: v0.7 Genel Beta / Pilot.** Kaynak kodu paylaşım için hazırlanmıştır; farklı Outlook sürümlerinde uçtan uca test edilmiş, kararlı bir ürün değildir. Özellikle otomatik yanıt eşleştirmesi ve HTML raporu bu sürümde kullanıcı testine ihtiyaç duyar.
+> **Durum: v0.7.1 Genel Beta / Pilot.** Yapılacak işleri gösterme ve çift takip düzeltmeleri yayımlandı; gerçek Outlook ortamında doğrulama devam ediyor.
 
 ## Ürün amacı — Outlook içinde, veriyi dışarı taşımadan iş yönetimi
 
@@ -17,6 +17,10 @@ Bu proje, iş yerinde Notion, Trello veya benzeri üçüncü taraf servisleri ku
 **V0.7 gizlilik sınırı:** Mevcut beta sürümü seçili e-postadan en fazla 10.000 karakteri takip görevinin `Body` alanına kopyalar; yanıt metinlerinden de parçalar kaydedebilir. Böylece içerik zaten kurumsal Outlook/Exchange ortamı içindeyken **ikinci bir görev kaydı içinde çoğaltılır**. Bunu daha veri-minimum bir sürümde, asıl e-postayı gerektiğinde okuyup görevde yalnızca bağlantı ve durum bilgisi tutarak azaltmayı hedefliyoruz. Henüz uygulanmamış bir özelliği mevcut gibi göstermiyoruz.
 
 Ayrıntılı yaklaşım: [Ürün vizyonu ve veri sınırları](docs/URUN_VIZYONU.md).
+
+## v0.7.1 düzeltmesi
+
+Yapılacak işler, hatırlatma tarihleri gecikmiş olsa bile **Yapılacak İşler** kategorisinde görünür. Aynı e-postada yanıt bekleme ve yapılacak iş ayrı kaydedilebilir. Tanılama için `Takip_10_DurumleriKontrolEt` komutunu çalıştırabilirsiniz. Uygulama halen test sürümüdür.
 
 ## Neler yapar?
 
