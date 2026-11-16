@@ -1,0 +1,10 @@
+*.otm
+*.pst
+*.ost
+*.msg
+*.eml
+*.log
+*.bak
+~$*
+.DS_Store
+Thumbs.db

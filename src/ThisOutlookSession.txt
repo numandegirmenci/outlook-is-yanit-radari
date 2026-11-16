@@ -1,0 +1,37 @@
+' OUTLOOK IS VE YANIT RADARI v0.7 - Yalnizca ThisOutlookSession bolumune eklenir.
+' Bu blok icinde Application_Startup veya Application_NewMailEx
+' makrosu zaten varsa iki kere eklemeyin: mevcut olaya ilgili satirlari birlestirin.
+Option Explicit
+
+Private WithEvents TakipKolayGelen As Outlook.Items
+
+Private Sub Application_Startup()
+    On Error GoTo Hata
+    Set TakipKolayGelen = Application.Session.GetDefaultFolder(olFolderInbox).Items
+    Takip_BaslangicTaramasi
+    Exit Sub
+Hata:
+    Debug.Print "Is ve Yanit Radari acilis: " & Err.Number & " - " & Err.Description
+End Sub
+
+' Yeni gelen Outlook iletileri: Outlook acikken, istemci kurallari devreye
+' girmeden once tetiklenir. Outlook kapaliyken bu olay CALISMAZ.
+Private Sub Application_NewMailEx(ByVal EntryIDCollection As String)
+    On Error GoTo Hata
+    Dim mesaj As Object
+    Set mesaj = Application.Session.GetItemFromID(EntryIDCollection)
+    If Not mesaj Is Nothing Then Takip_OtomatikYanit mesaj
+    Exit Sub
+Hata:
+    Debug.Print "Is ve Yanit Radari yeni posta: " & Err.Number & " - " & Err.Description
+End Sub
+
+' Yedek kontrol: Varsayilan Gelen Kutusu uzerindeki tekli eklemeleri yakalar.
+' Eger ilk olayda yanit yakalandiysa ikinci olay ayni gorevi tekrar islemez.
+Private Sub TakipKolayGelen_ItemAdd(ByVal Item As Object)
+    On Error GoTo Hata
+    If TypeOf Item Is Outlook.MailItem Then Takip_OtomatikYanit Item
+    Exit Sub
+Hata:
+    Debug.Print "Is ve Yanit Radari Gelen Kutusu: " & Err.Number & " - " & Err.Description
+End Sub
