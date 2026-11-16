@@ -4,6 +4,20 @@
 
 > **Durum: v0.7 Genel Beta / Pilot.** Kaynak kodu paylaşım için hazırlanmıştır; farklı Outlook sürümlerinde uçtan uca test edilmiş, kararlı bir ürün değildir. Özellikle otomatik yanıt eşleştirmesi ve HTML raporu bu sürümde kullanıcı testine ihtiyaç duyar.
 
+## Ürün amacı — Outlook içinde, veriyi dışarı taşımadan iş yönetimi
+
+Bu proje, iş yerinde Notion, Trello veya benzeri üçüncü taraf servisleri kullanamayan; fakat klasik Outlook'ta çok sayıda talep, yazışma ve bekleyen işi yöneten kişiler için tasarlanır. Amaç **ayrı bir iş takip hesabı ya da sunucu gerektirmeden Outlook'un kendi içinde iş yönetimi** sağlamaktır.
+
+- **Mevcut iş akışı:** Gelen veya gönderilen e-postadan bir tıklamayla takip aç; yanıt bekle, yapılacak iş veya inceleme durumuna geçir; iş bitince tamamla.
+- **Bağlam:** Takibi ilgili yazışmaya bağla. Kullanıcı neyin neden beklediğini görev üstünden görebilsin.
+- **Kontrol kullanıcıda:** Hatırlatma tarihi kullanıcı seçer; hiçbir mesaj otomatik gönderilmez veya silinmez.
+- **Veri ilkesi:** Harici API, üçüncü taraf iş takip servisi, reklam, analiz, telemetri veya uzaktan yapay zeka işleme **ürünün hedef mimarisinde yoktur**. GitHub yalnızca açık kaynak kodu dağıtmak içindir, kullanıcı e-postalarını toplamak için değil.
+- **Kurumsal gerçeklik:** Outlook görevleri Exchange/Microsoft 365 hesabında tutulursa şirketin mevcut Microsoft altyapısıyla eşitlenebilir. Bu, "yalnızca cihazda saklanır" demek değildir.
+
+**V0.7 gizlilik sınırı:** Mevcut beta sürümü seçili e-postadan en fazla 10.000 karakteri takip görevinin `Body` alanına kopyalar; yanıt metinlerinden de parçalar kaydedebilir. Böylece içerik zaten kurumsal Outlook/Exchange ortamı içindeyken **ikinci bir görev kaydı içinde çoğaltılır**. Bunu daha veri-minimum bir sürümde, asıl e-postayı gerektiğinde okuyup görevde yalnızca bağlantı ve durum bilgisi tutarak azaltmayı hedefliyoruz. Henüz uygulanmamış bir özelliği mevcut gibi göstermiyoruz.
+
+Ayrıntılı yaklaşım: [Ürün vizyonu ve veri sınırları](docs/URUN_VIZYONU.md).
+
 ## Neler yapar?
 
 - **Yanıt bekliyorum:** Seçilen e-posta için takip oluşturur.
