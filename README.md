@@ -27,6 +27,12 @@ Ayrıntılı yaklaşım: [Ürün vizyonu ve veri sınırları](docs/URUN_VIZYONU
 - **Hatırlatma taslağı:** Takip edilen yazışmayı temel alan **gönderilmeyen** bir taslak hazırlar.
 - **Tarih kontrolü:** Hatırlatma tarihi kullanıcının seçimine bırakılmıştır; `YOK` ile tarihsiz takip oluşturulabilir.
 
+## Android mobil — deneysel geliştirme
+
+Outlook Android'de görev takibi için ayrı bir yerel yardımcı uygulama üzerinde çalışılıyor: [Takip Kolay Android (0.1.0-alpha)](mobile/android/README.md).
+
+Bu çözüm mevcut VBA makrosunun Android'de çalışması anlamına gelmez. Android uygulaması yalnızca sistemin paylaştığı veya kullanıcının yapıştırdığı metinle görev oluşturur; Outlook'un tüm yazışmalarına doğrudan erişmez. Görevler cihazda şifrelenir; tarih kullanıcı seçer. Mobil sürüm henüz beta öncesi test aşamasındadır.
+
 ## Uyumlu sistem
 
 - Windows'ta **klasik Microsoft Outlook** (VBA desteği ve şirketin güvenlik politikalarının izin vermesi gerekir).

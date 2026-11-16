@@ -1,3 +1,9 @@
+## Android 0.1.0-alpha — ayrı geliştirme / ana sürüme dahil değil
+
+- Android metin paylaşımından görev oluşturma ve yerel şifreli saklama prototipi.
+- İsteğe bağlı kullanıcı seçimiyle hatırlatma, tarihsiz görev, düzenleme ve tamamlama.
+- Outlook'un içeriği paylaşmasını garanti etmez; mobil test ve derleme gereklidir.
+
 # Sürüm notları
 
 ## v0.7.0-beta — Genel pilot kaynak paketi

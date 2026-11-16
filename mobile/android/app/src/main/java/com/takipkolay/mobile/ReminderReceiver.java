@@ -12,7 +12,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 
-final class ReminderReceiver extends BroadcastReceiver {
+public final class ReminderReceiver extends BroadcastReceiver {
     private static final String CHANNEL = "takip_kolay_reminders";
 
     @Override
