@@ -1,13 +1,9 @@
-# v0.8.3 Genel Beta — Hızlı Tarih ve İş Masam
+# v0.9.1 Genel Beta — İş Masam'da e-posta içerikleri
 
-**Ne işe yarar?** Outlook'tan ayrılmadan e-postalarını yanıt bekleyen veya yapılacak işe çevirirsin. İşleri bir listede görürsün ve zamanını kendin belirlersin.
+**Ne yeni?** Görevini İş Masam'da seçtiğinde **yalnızca başlığı değil, e-postada yazılanları** da aynı pencerede görebiliyorsun. Outlook'un bulabildiği yazışma yanıtları da listelenebilir. Kaynak e-postaya dönmek, hatırlatma taslağı açmak ve işi tamamlamak için ayrı makrolar çalıştırmak gerekmiyor.
 
-**Bu sürümde yeni:** Her seferinde tarih yazmana gerek yok. 1 (1 saat), 2 (yarın 09.00), 3 (3 gün), 4 (7 gün), 5 (özel tarih), 0 (hatırlatmasız) yazman yeterli.
+**Kurulum değişti:** Önceki testte `&H80004005` hatası veren bozuk `.frm` dosyası kaldırıldı. İlk kurulumda VBA editöründe boş **UserForm** oluşturup `src/frmRadarIsMasam_KODU.txt` içeriğini yapıştırmak gerekir. [Adım adım kurulum](docs/FORM_KURULUMU.md).
 
-**İş Masam:** Görevler Outlook'un kendi listesinde TODO, WAIT, REVIEW, DONE durumlarına göre gruplandırılabilir. Kaynak yazışma seçili görevden açılabilir.
+**Gizlilik:** Harici iş takip servisi yoktur. Yazışma metni panelde Outlook'tan okunur; ancak kurumsal Outlook/Exchange senkronizasyonu ayrı devam edebilir. Taslaklar kendiliğinden gönderilmez.
 
-**Gizlilik:** Veri harici bir iş takip sunucusuna gönderilmez; Outlook Görevler ve postalarınız şirket Exchange/Microsoft 365 sistemine eşitlenebilir. Önceki sürümlerin kayıtları taşınmaz veya silinmez.
-
-**Kurulum:** Windows'ta klasik Outlook gerekir. VBA izinleri kuruluşun politikasına tabidir. Kodlar `src/` klasöründedir, kolay rehber: [Kurulum](docs/KURULUM.md).
-
-**Durum:** Genel Beta. Outlook üzerinde tüm fonksiyonlar canlı doğrulanmış değildir. Deneme postasıyla başlayın; güvenlik politikalarını aşmayın.
+**Sürüm durumu:** Genel Beta — farklı Outlook ortamlarında derleme ve canlı test henüz tamamlanmamıştır. Önce test e-postasıyla deneyin.

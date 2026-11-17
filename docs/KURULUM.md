@@ -1,46 +1,37 @@
-# Kurulum ve ilk kullanım — Outlook İş ve Yanıt Radarı v0.8.3
+# Kurulum ve güncelleme — v0.9.1 Genel Beta
 
-Bu rehber, teknik terimlerle uğraşmadan ilk kurulumu yapabilmen için hazırlandı.
-
-## Önce kontrol et
-
-- Bilgisayarında **klasik Outlook** olmalı. Yeni Outlook veya tarayıcıda Outlook çalışmaz.
-- Şirketin makro çalıştırmayı engelliyorsa **güvenlik politikasını aşma**; bilgi işlem biriminden izin al.
-- Mevcut bir VBA projen varsa önce yedekle.
+Bu proje klasik Windows Outlook ve izin verilmiş VBA makrolarıyla çalışır. **Yeni Outlook** desteklenmez.
 
 ## İlk kurulum
 
-1. GitHub'da **Code → Download ZIP** düğmesiyle kodları indir, ZIP'i bir klasöre aç.
-2. Outlook açıkken **`Alt + F11`** tuşlarına bas.
-3. VBA penceresinin üst menüsünden **File → Import File** seç ve `src/IsYanitRadari.bas` dosyasını yükle. `TakipKolay` adlı modül görünür.
-4. Aynı şekilde `src/RadarIsMasam.bas` dosyasını da yükle.
-5. Yanıt algılama olaylarını kullanmak istiyorsan `src/ThisOutlookSession.txt` dosyasını incele. `ThisOutlookSession` altında zaten **Application_Startup** ya da **Application_NewMailEx** varsa aynı adlı ikinci prosedür oluşturma; kodların uygun şekilde birleştirilmesi gerekir. Bu konuda emin değilsen bu adımı atla, yanıtları `Takip_4_YanitlariKontrolEt` ile elle kontrol et.
-6. **Debug → Compile VBAProject** seç. Hata varsa kodu çalıştırma; hata metnini not al.
-7. `Ctrl + S` ile kaydet, Outlook'u tamamen kapatıp yeniden aç.
-8. Deneme mesajı seç. `Alt + F8` → `Takip_2_YapacagimIs` → Çalıştır. Açılan menüde `2` yazarsan ertesi gün 09.00'a hatırlatma konur.
-9. `Alt + F8` → `Radar_11_IsMasam`. Açılan görev listesinden yeni deneme kaydını kontrol et.
+1. GitHub üzerinden **Code → Download ZIP** indirip klasöre çıkartın.
+2. Outlook'ta `Alt + F11` → **File → Import File**: `src/IsYanitRadari.bas` ve `src/RadarIsMasam.bas` yükleyin.
+3. **Insert → UserForm** ile boş form oluşturun, **(Name)** özelliğini `frmRadarIsMasam` yapın.
+4. Formun **kod penceresine** `src/frmRadarIsMasam_KODU.txt` içeriğinin tamamını yapıştırın. Form tasarımında manuel düğme eklemeyin.
+5. **Debug → Compile VBAProject**, `Ctrl + S`, Outlook'u yeniden açın.
+6. Test e-postası seçin → `Alt + F8` → `Takip_2_YapacagimIs` → tarih seçin → `Radar_11_IsMasam` → görevi tıklayın.
 
-## v0.7.x veya v0.8.x'ten güncelleme
+**Bozuk eski formu içeri aktarmayın:** `frmRadarIsMasam.frm`/`.frx` dosyaları dağıtılmıyor; form yalnızca `Insert → UserForm` ile eklenir.
 
-1. `Alt + F11` → **Modules** altındaki `TakipKolay` modülüne sağ tık → **Export File** ile yedekle.
-2. Eski `TakipKolay` modülünü **Remove** ile kaldır. Bu işlem Outlook görevlerini silmez.
-3. Yeni `src/IsYanitRadari.bas` dosyasını **Import File** ile yükle.
-4. Bilgisayarında `RadarIsMasam` modülü yoksa `src/RadarIsMasam.bas` dosyasını da yükle. V0.8.2 kullanıyorsan mevcut modül aynı sürümdür; yeniden yüklemen gerekmez.
-5. `ThisOutlookSession` bölümünü sırf güncelleme yapıyorsun diye değiştirme.
-6. Derle, kaydet ve Outlook'u yeniden aç.
+## Mevcut v0.8.3 sürümünden güncelleme
 
-**Görevler → Takip Kolay** klasörünü silme. Eski takipler aynı klasörde kalır.
+1. `Alt + F11` → eski `RadarIsMasam` modülünü **Export File** ile yedekleyin, sonra **Remove** ile kaldırın.
+2. `src/RadarIsMasam.bas` dosyasını import edin.
+3. Mevcut `frmRadarIsMasam` formu varsa yeniden oluşturmayın; kodunu yenileyin. Yoksa yeni form oluşturun. [Ayrıntılı rehber](FORM_KURULUMU.md).
+4. **`TakipKolay` ve `ThisOutlookSession` değiştirilmez.** `Görevler → Takip Kolay` klasörünü silmeyin.
+5. Derleyin ve Outlook'u yeniden açın.
+
+## Otomatik yanıt algılama (isteğe bağlı)
+
+`src/ThisOutlookSession.txt` içindeki olay prosedürleri yalnızca uygun kurulumlarda ve çakışan `Application_Startup` / `Application_NewMailEx` prosedürleri birleştirilerek kullanılmalıdır. Emin değilseniz otomatik kurulum yapmayın; `Takip_4_YanitlariKontrolEt` ile manuel yanıt kontrolünü kullanın.
 
 ## Hızlı tarih seçimi
 
-`1`: 1 saat sonra. `2`: yarın 09.00. `3`: 3 gün sonra 09.00. `4`: bir hafta sonra 09.00. `5`: tarih ve saatini yaz (ör. `25.11 15:30`). `0`: hatırlatma olmadan kaydet. **Boş giriş / İptal:** vazgeç.
+`1`: 1 saat sonra; `2`: yarın 09.00; `3`: 3 gün sonra; `4`: 1 hafta sonra; `5`: özel tarih/saat (`25.11 15:30`); `0`: tarih olmadan kaydet; boş/İptal: işlemi iptal et. Tarih otomatik atanmaz.
 
-Kayıt veya tarih değişikliği için seçimi kullanıcı yapar; makro tarihi kendiliğinden belirlemez.
+## Dikkat
 
-## Bir şey çalışmazsa
-
-- VBA derleme hatasının **tam metnini** not al.
-- İş listesi görünmüyorsa `Takip_7_SistemKontrolu` veya `Takip_10_DurumleriKontrolEt` çalıştır.
-- Outlook görünümü hata verirse görev klasörünü silme; görünüm ile görev kaydı farklı şeylerdir.
-- Yanıt algılaması her klasörde ve her hesabın mesajlarında kusursuz çalışmayı garanti etmez.
-- GitHub'da hata bildirirken **gerçek iş e-postası, adres, sözleşme, evrak veya kişisel bilgi paylaşma**.
+- Macro güvenliğini kapatmayın; kurum onayı gerekir.
+- İlk testlerde kurum evrakı veya kişisel bilgiler içermeyen deneme e-postaları kullanın.
+- Görevler Exchange/Microsoft 365 ile eşitlenebilir. Harici üçüncü taraf sunucu kullanmamak, bütün bilgilerin yalnızca cihazda olduğu anlamına gelmez.
+- Kod beta aşamasındadır; hata raporlarını şirket verilerinden arındırın.

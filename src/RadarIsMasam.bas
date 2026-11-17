@@ -1,7 +1,7 @@
 Attribute VB_Name = "RadarIsMasam"
 Option Explicit
 
-' IS VE YANIT RADARI v0.8.2 - OZEL TEST / SQL'siz gruplu gorev panosu
+' IS VE YANIT RADARI v0.9.1 - GENEL BETA / tek pencereli is masam
 ' Yeni hesap, HTTP baglantisi, ek servis, otomatik e-posta gonderimi yok.
 ' Takip kayitlarini silmez veya baska klasore tasimaz.
 
@@ -27,49 +27,17 @@ Private Const GOR_ISMASAM As String = "Radar - Is Masam (Gruplu)"
 ' Gruplar: TODO / WAIT / REVIEW / DONE. Kayitlari degistirmez.
 Public Sub Radar_11_IsMasam()
     On Error GoTo Hata
-    Dim klasor As Outlook.MAPIFolder, pencere As Outlook.Explorer
-    Dim aciklama As String, gruplu As Boolean, ayrinti As String
-    Set klasor = RadarKlasoru()
-
-    ' Klasorun kendisini her kosulda ac. Gorev kayitlari degistirilmez.
-    Set pencere = Application.ActiveExplorer
-    If pencere Is Nothing Then
-        Set pencere = klasor.GetExplorer
-        pencere.Display
-    Else
-        Set pencere.CurrentFolder = klasor
-    End If
-
-    ' Onceki surumlerin hatali SQL/DASL filtrelerini kullanmayiz.
-    ' TKState alanina gore tek gorunumde gruplama yapariz.
-    On Error GoTo GorunumHatasi
-    RadarAlanlariKaydet klasor
-    gruplu = RadarGrupluGorunumHazirla(klasor, aciklama)
-    If gruplu Then
-        pencere.CurrentView = GOR_ISMASAM
-        Exit Sub
-    End If
-GorunumHatasi:
-    ' Gruplama Outlook surumunde engellenmisse bile kullanici
-    ' butun islerini Gorevler klasorunde gorebilir.
-    If Err.Number <> 0 Then
-        ayrinti = "Gorunum hatasi " & Err.Number & ": " & Err.Description
-        Err.Clear
-    Else
-        ayrinti = aciklama
-    End If
-    On Error Resume Next
-    pencere.CurrentView = GOR_ISMASAM
-    On Error GoTo Hata
-    MsgBox "Is Masam klasoru acildi. Gruplandirilmis gorunum bu Outlook " & _
-           "surumunde uygulanamadi." & vbCrLf & vbCrLf & _
-           ayrinti & vbCrLf & vbCrLf & _
-           "Gorevlerinize dokunulmadi. Mevcut gorev listesi aciktir.", _
-           vbExclamation, "Is ve Yanit Radari"
+    Dim panel As Object
+    ' Kullanici bir defa bos form olusturup kodu yapistirir.
+    ' Form heniz yoksa diger makrolar yine derlenebilir.
+    Set panel = VBA.UserForms.Add("frmRadarIsMasam")
+    panel.Show vbModeless
     Exit Sub
 Hata:
-    MsgBox "Is Masam acilamadi. Hata " & Err.Number & ": " & Err.Description, _
-           vbExclamation, "Is ve Yanit Radari"
+    MsgBox "Is Masam paneli acilamadi. Form kurulmamissa:" & vbCrLf & _
+           "Alt+F11 > Insert > UserForm > (Name): frmRadarIsMasam" & vbCrLf & _
+           "Ardindan src\frmRadarIsMasam_KODU.txt dosyasini formun koduna yapistirin." & vbCrLf & _
+           "Hata " & Err.Number & ": " & Err.Description, vbExclamation, "Is ve Yanit Radari"
 End Sub
 
 ' Gorev secip bu komutu calistirirsaniz kaynak e-posta acilir.

@@ -1,101 +1,65 @@
 # Outlook İş ve Yanıt Radarı
 
-**Outlook'taki e-postalarını yapılacak işlere dönüştür. Yanıt beklediğin konuları unutma. İşlerini başka bir uygulamaya taşımadan takip et.**
+**Outlook'ta çok sayıda yazışma ve işi takip edenler için ücretsiz, açık kaynaklı bir iş masası.**
 
-> **Güncel sürüm: v0.8.3 Genel Beta (16 Kasım 2026).** Ücretsiz ve açık kaynaklıdır. Klasik Outlook için geliştirilmiştir. Tüm bilgisayarlarda test edilmiş kararlı bir ürün değildir.
+> **v0.9.1 Genel Beta — 18 Kasım 2026.** Kod yayımlanmıştır, ancak yeni form arayüzünün farklı Outlook kurulumlarında canlı çalışması henüz doğrulanmamıştır. Önce test e-postalarıyla deneyin.
 
-## Bu program ne işe yarıyor?
+## Ne işe yarıyor?
 
-Gün boyunca birçok kişiye e-posta gönderdiğini düşün. Birinden evrak, diğerinden onay, bir başkasından ödeme bilgisi bekliyorsun. Araya yeni e-postalar girdikçe neyi, kimden beklediğini hatırlamak zorlaşıyor.
+Her gün e-postayla birinden evrak, bir başkasından cevap veya onay bekleyen biri için Outlook'taki işlerin kolayca kaybolması mümkündür. Bu araç, bunları **başka bir iş takip servisine taşımadan** mevcut Outlook'ta izlemeyi hedefler.
 
-**İş ve Yanıt Radarı**, bu yazışmaları Outlook'tan çıkmadan takip etmen için hazırlanmış bir araçtır:
+- **Yapacağım İş:** Gelen veya gönderilen e-postadan kendi işini kaydet.
+- **Yanıt Bekliyorum:** Birinden cevap beklediğin yazışmayı izlemeye al.
+- **İş Masam:** İşlerini tek pencerede gör; **Yapılacak / Yanıt Bekleyen / İncelenecek / Tamamlanan** filtrelerinden birini seç.
+- **E-posta içeriğini oku (v0.9.1):** İşin üzerine tıkladığında konuyu, göndereni, alıcıyı, mesaj metnini ve Outlook'un bulabildiği ilgili yanıtları **aynı pencerede** gör.
+- **E-postayı Aç:** Orijinal mesajı aç. Mesaj taşındıysa veya bulunamıyorsa konusuna göre Outlook araması için önce onay ister.
+- **Hatırlatma:** Görev açarken `1` (1 saat), `2` (yarın), `3` (3 gün), `4` (1 hafta), `5` (özel tarih), `0` (hatırlatmasız) seç. Program tarihi kendiliğinden belirlemez.
+- **Hatırlatma Taslağı / Tamamlandı / Yenile:** İş Masam'daki düğmelerden kullan. **Hiçbir e-posta otomatik gönderilmez.**
 
-- **Yanıt Bekliyorum:** Birine e-posta gönderdin, cevap bekliyorsun.
-- **Yapacağım İş:** Bir e-posta geldi, yapman gereken bir işlem var.
-- **İş Masam:** Açık işleri tek yerde görürsün. İşler `TODO` (Yapılacak), `WAIT` (Yanıt bekleniyor), `REVIEW` (İncelenecek) ve `DONE` (Tamamlandı) olarak gruplanabilir.
-- **Gelen yanıtı kontrol et:** Takip edilen yazışmaya cevap gelirse görev incelemeye alınabilir. Cevap geldi diye iş otomatik tamamlanmaz.
-- **Hatırlatma:** Zamanı sen belirlersin; hatırlatmasız görev de oluşturabilirsin.
-- **Kaynak yazışmayı aç:** Takip kaydından ilgili e-postaya geri dönebilirsin.
-- **İşlerim raporu:** Bekleyen, yapılacak ve geciken işleri özetler. E-posta olarak *gönderilmez*.
+### Kısa örnek
 
-**Örnek:** Bir kurumdan ruhsatla ilgili belge istedin. E-postayı seçip `Yanıt Bekliyorum` dedin, yarına hatırlatma koydun. Ertesi gün İş Masam'da bu yazışmayı bulabilirsin. Yanıt gelirse ayrıca kontrol edebilirsin.
+Bir iş arkadaşından evrak bekliyorsun. İlgili e-postayı **Yanıt Bekliyorum** olarak kaydet. Sonra **İş Masam** ekranından göreve tıkla: mesajın içeriğini ve Outlook'un aynı konuşmada bulabildiği yanıtları gör. Gerekirse orijinal e-postayı aç veya göndermeden önce kontrol edeceğin bir hatırlatma taslağı hazırla.
 
-## v0.8.3 yeniliği: Tarih yazmak yerine rakam seç
+## Kimler için?
 
-Yeni iş açarken veya var olan işin tarihini değiştirirken hızlı seçim menüsü çıkar:
+Şirket bilgisayarında Notion, Trello veya başka bir harici iş takip servisine erişemeyen; yoğun Outlook trafiğini ayrıca Excel'e aktarmak istemeyen çalışanlar için. **Klasik Windows Outlook + kurum tarafından izin verilmiş VBA** gerekir. Yeni Outlook, Outlook Web ve mobil Outlook desteklenmez.
 
-| Seçim | Ne olacak? |
-|---|---|
-| `1` | 1 saat sonra |
-| `2` | Yarın 09.00 |
-| `3` | 3 gün sonra 09.00 |
-| `4` | 1 hafta sonra 09.00 |
-| `5` | Kendi gün ve saatini yaz: `25.11 15:30` |
-| `0` | Tarih ve hatırlatma olmadan kaydet |
-| Boş / İptal | İşlemden vazgeç; var olan tarih değişmez |
+## Kurulum — v0.9.1'de önemli değişiklik
 
-**Program senin yerine tarih seçmez.** Saat 09.00 ancak ilgili seçeneği bilerek tercih edersen kullanılır. Özel tarih girişinde saat yazmazsan 09.00 kabul edilir.
+Önceki test paketindeki `frmRadarIsMasam.frm` dosyası bazı bilgisayarlarda **&H80004005** hatası verdiği için **artık dağıtılmıyor**. Form **bir defa Outlook'un VBA editöründe boş olarak oluşturuluyor**; arayüz düğmelerini kod kendisi ekliyor.
 
-## Kimler kullanabilir?
+**İlk kurulum:**
 
-Özellikle e-postayla çok iş yürüten; kurumundaki kısıtlamalar yüzünden Notion, Trello gibi harici platformlara veri gönderemeyen veya Excel'de ayrıca iş listesi tutmak istemeyen kişiler için.
+1. [Code → Download ZIP](https://github.com/numandegirmenci/outlook-is-yanit-radari/archive/refs/heads/main.zip) ile projeyi indirip aç.
+2. Klasik Outlook'ta `Alt + F11` → **File → Import File**: önce `src/IsYanitRadari.bas`, sonra `src/RadarIsMasam.bas` dosyasını ekle.
+3. **Insert → UserForm** ile boş form oluştur; `F4` (Properties) → **(Name)** alanını `frmRadarIsMasam` yap.
+4. Forma `F7` ile **kod görünümünde** geç; `src/frmRadarIsMasam_KODU.txt` dosyasının **tüm içeriğini** yapıştır. Forma elle buton ekleme.
+5. **Debug → Compile VBAProject** ile kontrol et; `Ctrl + S` ile kaydet ve Outlook'u yeniden aç.
+6. Önce bir **test e-postasında** `Takip_2_YapacagimIs`, sonra `Radar_11_IsMasam` çalıştır. Görev satırını seçtiğinde e-posta metnini görebilmelisin.
 
-- Windows'ta **klasik Microsoft Outlook** gerekir.
-- **Yeni Outlook, Outlook Web ve mobil Outlook** desteklenmez.
-- Outlook VBA makrolarının kurumun güvenlik politikaları tarafından **izin verilmiş** olması gerekir.
-- Ayrı bir iş yönetimi hesabı veya kendi sunucumuzu kullanman gerekmez.
+**Mevcut v0.8.3 kullanıcıları:** `TakipKolay` modülüne, `ThisOutlookSession` koduna veya Görevler içindeki **Takip Kolay** klasörüne dokunmayın. `RadarIsMasam` modülünü önce yedekleyin, ardından yeni dosyayla değiştirin; yalnızca formu yukarıdaki şekilde ekleyin. Form varsa tekrar oluşturmayın.
 
-## Kurulum (ilk kez kullananlar)
+**[Adım adım kurulum ve hata çözümü](docs/KURULUM.md)** · **[Form kurulum rehberi](docs/FORM_KURULUMU.md)** · **[Test planı](docs/TEST_PLANI.md)**
 
-1. Bu sayfadaki **Code → Download ZIP** üzerinden kodları indir, ZIP dosyasını aç.
-2. Klasik Outlook'ta **`Alt + F11`** ile VBA editörünü aç.
-3. **File → Import File** üzerinden önce `src/IsYanitRadari.bas`, ardından `src/RadarIsMasam.bas` dosyalarını içeri aktar.
-4. Otomatik gelen yanıt kontrolünü kullanmak istiyorsan `src/ThisOutlookSession.txt` içindeki kodu mevcut `ThisOutlookSession` bölümüne **çakışma oluşturmadan** ekle. Bu aşamayı anlamıyorsan ilgili kodu körü körüne yapıştırma.
-5. **Debug → Compile VBAProject** ile derle, `Ctrl + S` ile kaydet.
-6. Outlook'u tamamen kapatıp yeniden aç.
-7. Deneme e-postası seç, `Alt + F8` ile `Takip_2_YapacagimIs` komutunu çalıştır ve tarih için `0` ya da `2` seç. Sonra `Radar_11_IsMasam` komutunu çalıştır.
+## Gizlilik — bilgiler nereye gidiyor?
 
-**Önceki sürümden güncelliyorsan:** Eski VBA modüllerini **Export File** ile yedekle. Mevcut `TakipKolay` modülünü kaldırıp yeni `IsYanitRadari.bas` dosyasını yükle. V0.8.2'nin `RadarIsMasam` modülünü kullanıyorsan o modül aynı kaldı. **Outlook Görevler → Takip Kolay klasörünü silme.** Kurulum ayrıntıları: [Türkçe kurulum rehberi](docs/KURULUM.md).
+Proje **bağımsız bir üçüncü taraf iş takip sunucusu, telemetri veya uzaktan yapay zeka servisi kullanmaz**. Yeni görevlerde e-postanın tam gövdesi yeniden kopyalanmaz; form, seçilen e-postanın metnini Outlook'tan gerektiğinde okur.
 
-## En sık kullanılan komutlar
+**Ancak:** Outlook verileri kurumunuzun Exchange/Microsoft 365 sunucularıyla eşitlenebilir. Bu nedenle "veriler bilgisayardan hiç çıkmaz" iddiası doğru değildir. Önceki sürümlerde oluşturulmuş görevlerin içinde yazışma kopyaları olabilir; otomatik silinmez. Taslaklar Outlook'un eşitleme kurallarına tabidir. **Şirketin VBA/makro politikasını aşmayın.**
 
-| Makro | Ne işe yarar? |
-|---|---|
-| `Takip_1_YanitBekliyorum` | E-postadan yanıt bekleyen iş açar |
-| `Takip_2_YapacagimIs` | E-postadan yapılacak iş açar |
-| `Radar_11_IsMasam` | Outlook'ta gruplu iş listesini açar |
-| `Takip_3_Islerim` | İşlerim özet raporunu gösterir |
-| `Takip_6_TarihiDegistir` | İşe yeni tarih/saat belirler |
-| `Radar_12_KaynakYazismayiAc` | Seçili görevin kaynak e-postasını açar |
-| `Radar_13_KategoriDegistir` | Görevin kategorisini değiştirir |
-| `Takip_8_HatirlatmaTaslagi` | Gönderilmemiş hatırlatma taslağı hazırlar |
-| `Takip_10_DurumleriKontrolEt` | Durumlara göre iş sayılarını gösterir |
+[Detaylı gizlilik ve güvenlik açıklaması](docs/GIZLILIK_VE_GUVENLIK.md).
 
-Tüm komutların listesi ve test adımları: [Test planı](docs/TEST_PLANI.md).
+## Bilinen sınırlar
 
-## Verilerim başka yere gider mi?
+- **Kurulumda form elle oluşturulur**; bu henüz tek tıklamalı bir eklenti değildir.
+- Konuşma detaylarında Outlook'un bulabildiği en fazla **45 ileti** incelenir; en son **16 ileti** gösterilir; her iletiden en fazla **1.700 karakter** alınır. Yanıtların tamamı bulunamayabilir.
+- Taşınan, silinen veya başka depoya giden kaynak e-postanın kimliği çalışmayabilir; konu araması kesin eşleşme garantilemez.
+- Listede en fazla **600 görev** taranır. Görev panelinde yapılan **Tamamlandı** işlemi gerçek görev durumunu değiştirir.
+- Kullanıcı hatırlatma taslağını kendi kontrol edip göndermelidir; alıcı, metin ve önceki yazışmalar özellikle incelenmelidir.
+- **Beta:** Formun gerçek Outlook üzerinde derlendiği ve her senaryoda sorunsuz çalıştığı henüz doğrulanmadı.
 
-**Amaç, e-posta içeriğini bağımsız bir üçüncü taraf iş takip servisine göndermeden çalışmaktır.**
+## Hata bildirme ve katkı
 
-- Bu VBA kaynak kodunda **harici bir iş takip sunucusuna gönderim, telemetri ve reklam servisi yoktur**.
-- **v0.8'den itibaren yeni oluşturulan görevlerde** kaynak e-posta metni ayrıca görev gövdesine kopyalanmaz; gerekli bağlantı ve iş bilgileri tutulur. İlgili yazışma gerektiğinde Outlook'tan okunur.
-- **Önemli ayrım:** Outlook e-posta ve görev verileri, hesabın yapılandırmasına göre **şirketinin Exchange/Microsoft 365 altyapısına senkronize olabilir**. Bu, tamamen çevrimdışı veya yalnızca bilgisayarda saklama anlamına gelmez.
-- Eski sürümlerde oluşturulmuş görevlerin gövdesinde kopya yazışma metinleri bulunabilir; bu sürüm onları otomatik silmez.
-- Hatırlatma taslakları **kendiliğinden gönderilmez**. Outlook'ta açılan taslaklar Outlook'un kendi kayıt ve senkronizasyon kurallarına tabi olabilir.
-- **Gerçek e-postaları, müşteri bilgilerini veya şirket evraklarını GitHub Issues'a yükleme.**
+Sorunu [GitHub Issues](https://github.com/numandegirmenci/outlook-is-yanit-radari/issues) üzerinden bildirebilirsin. **Gerçek e-posta içeriği, alıcı, müşteri veya kurum belgelerini paylaşma.** Ekran görüntüsündeki hassas bilgileri gizle.
 
-Detaylar: [Gizlilik ve güvenlik](docs/GIZLILIK_VE_GUVENLIK.md).
-
-## Bilinen sınırlamalar
-
-Bu bir **beta** sürümüdür; bazı özellikler farklı Outlook kurulumlarında hatalı çalışabilir. İş Masam tek gruplu Outlook görev görünümünü kullanır; eski filtreli görünümlerin Outlook tarafından reddedildiği durumlar yaşandı. Kaynak e-posta taşındıysa kimliği değişebilir ve bağlantı açılamayabilir. Yanıt kontrolü 45 günlük ve performans sınırları nedeniyle her yanıtı bulmayı garanti etmez. Kurumun makro politikalarını aşmaya çalışmayın.
-
-**Proje Microsoft'a ait resmi bir ürün değildir.** Hata ve geliştirme önerilerini kişisel/kurumsal bilgileri çıkartarak [GitHub Issues](https://github.com/numandegirmenci/outlook-is-yanit-radari/issues) üzerinden paylaşabilirsin.
-
-## Projenin durumu
-
-v0.8.3 kaynakları yayımlandı ve yapısal dosya kontrolleri yapıldı; **gerçek Outlook üzerinde bu sürümün bütün işlemleri uçtan uca doğrulanmadı**. Şimdilik örnek e-postalarla test edilmelidir.
-
-**Lisans:** [MIT](LICENSE) — ücretsiz, açık kaynak kodlu.
-
-**Hedefimiz:** Outlook içinde, Notion benzeri iş takip kolaylığı; üçüncü taraf platformlara iş verisi göndermeden ve yeni bir hesap oluşturmadan.
+**Lisans:** [MIT](LICENSE). **Resmi Microsoft ürünü değildir.**

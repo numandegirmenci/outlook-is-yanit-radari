@@ -1,18 +1,18 @@
-# v0.8.3 — Basit test planı
+# v0.9.1 test planı
 
-Önemli: İlk denemeleri gerçek iş yerine **test e-postalarıyla** yap.
+**Dikkat:** Testlerde kişisel/kurumsal gerçek e-posta kullanmayın. Önceki sürümün `.frm` dosyasını import etmeyin.
 
-1. `Alt + F11` → **Debug → Compile VBAProject**: derleme hatası olmamalı.
-2. Test e-postası seç → `Takip_2_YapacagimIs` → `2`: yarın 09.00 için hatırlatma oluşturulmalı.
-3. Farklı e-posta seç → `Takip_1_YanitBekliyorum` → `0`: hatırlatmasız görev açılmalı.
-4. Bir test görevi seç → `Takip_6_TarihiDegistir` → `5` → gelecekteki `gg.aa 15:30`: tarih güncellenmeli.
-5. Aynı görev → `Takip_6_TarihiDegistir` → boş/İptal: önceki tarih değişmemeli.
-6. Geçersiz tarih (`31.02`) veya geçmiş tarih gir: işlem reddedilmeli.
-7. `Radar_11_IsMasam`: Yapılacaklar `TODO`, Yanıt bekleyenler `WAIT` gibi gruplarda görünmeli.
-8. Test görevi seç → `Radar_12_KaynakYazismayiAc`: kaynak mesaj bulunabiliyorsa açılmalı.
-9. Deneme görevi seç → `Radar_13_KategoriDegistir`: durum değişikliği kaydedilmeli.
-10. `Takip_3_Islerim` raporunu aç: yapılacak işler kaybolmamalı, hiçbir mail otomatik gönderilmemeli.
-11. `Takip_10_DurumleriKontrolEt`: sayılar görevlerle uyumlu olmalı.
-12. Yanıt takibi testi için deneme yazışmasına yanıt ver: `Takip_4_YanitlariKontrolEt` ile kontrol et; görev otomatik tamamlanmamalı.
+1. `Alt + F11` → `Insert → UserForm` ile `frmRadarIsMasam` oluştur; kodunu yapıştır.
+2. `Debug → Compile VBAProject`: hata çıkmamalı. Hata çıkarsa dur; tam metni kaydet.
+3. Test e-postası seç → `Takip_2_YapacagimIs` → `0` (hatırlatmasız).
+4. `Radar_11_IsMasam`: tek pencere açılmalı; test görevi listede görünmeli.
+5. Görevi seç: ilk e-postanın **konu + tarih + gönderen + alıcı + metni** görünmeli.
+6. Ayrı test e-postasında `Takip_1_YanitBekliyorum` oluştur; **Yanıt Bekleyen** filtresinde görünmeli.
+7. Aynı konuşmada test yanıtı varsa, Yenile/yeniden seçim sonrası yeni mesaj görünmeli (Outlook Conversation desteği ve erişime bağlı).
+8. **Orijinal E-postayı Aç** kaynak mesajı göstermeli. Bulunamazsa Outlook araması için onay sorulmalı.
+9. **Hatırlatma Taslağı** açıldığında otomatik gönderim olmamalı; alıcıyı ve metni elle kontrol et.
+10. **Tamamlandı** düğmesini yalnızca test görevinde kullan; durum gerçekten DONE olmalı.
+11. `Takip_3_Islerim` raporunda Yapacağım İşler/ Yanıt Bekleyenler birbirine karışmamalı.
+12. Birden çok kez açma/kapama, 600'den fazla kayıt, Outlook klasörü taşıma, farklı Exchange hesapları gibi uç durumlar **henüz doğrulanmadı**.
 
-**Beta notu:** Bu testlerin tamamı gerçek Outlook ortamında doğrulanmadan kararlı sürüm iddiası kullanma. İş Masam görünümü Outlook sürümüne bağlı farklılık gösterebilir.
+Hata bildirirken yalnızca hata kodunu, işlem adını ve kişisel verilerden arındırılmış ekran görüntüsünü paylaşın.
