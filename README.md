@@ -2,7 +2,14 @@
 
 **Outlook'ta çok sayıda yazışma ve işi takip edenler için ücretsiz, açık kaynaklı bir iş masası.**
 
-> **v0.9.1 Genel Beta — 18 Kasım 2026.** Kod yayımlanmıştır, ancak yeni form arayüzünün farklı Outlook kurulumlarında canlı çalışması henüz doğrulanmamıştır. Önce test e-postalarıyla deneyin.
+> **V1.0 RC3 Genel Beta — 18 Kasım 2026.** Bu bir sürüm adayıdır; henüz kararlı V1.0 değildir. RC3 yenilikleri gerçek Outlook üzerinde tam doğrulanmadı. İlk denemeleri test e-postalarıyla yapın.
+
+## V1.0 RC3 yenilikleri
+
+- **Tüm Açık İşler** tamamlanan kayıtları listelemez; bitmiş işler üstteki **Tamamlanan** kutusuyla açılan ayrı pencerede gösterilir.
+- Soldaki **Durum / Tarih / Konu ve ilgili kişi** başlıkları ve görev satırları hizalandı.
+- **Yanıtla** ve **Tümüne Yanıtla** seçenekleri kaynak e-postanın gerçek Outlook yanıt taslağını açar; **asla otomatik göndermez**.
+- Gönderilmiş bir e-postada **Yanıtla** sizi alıcı olarak seçebilir. **Tümüne Yanıtla** fazla sayıda kişiyi ekleyebilir. Göndermeden önce **Kime/Bilgi** alanlarını kontrol edin.
 
 ## Ne işe yarıyor?
 
@@ -10,11 +17,11 @@ Her gün e-postayla birinden evrak, bir başkasından cevap veya onay bekleyen b
 
 - **Yapacağım İş:** Gelen veya gönderilen e-postadan kendi işini kaydet.
 - **Yanıt Bekliyorum:** Birinden cevap beklediğin yazışmayı izlemeye al.
-- **İş Masam:** İşlerini tek pencerede gör; **Yapılacak / Yanıt Bekleyen / İncelenecek / Tamamlanan** filtrelerinden birini seç.
+- **İş Masam:** Açık işleri tek pencerede gör; **Yapılacak / Yanıt Bekleyen / İncelenecek** filtrelerini kullan. Tamamlananları ayrı pencerede incele.
 - **E-posta içeriğini oku (v0.9.1):** İşin üzerine tıkladığında konuyu, göndereni, alıcıyı, mesaj metnini ve Outlook'un bulabildiği ilgili yanıtları **aynı pencerede** gör.
 - **E-postayı Aç:** Orijinal mesajı aç. Mesaj taşındıysa veya bulunamıyorsa konusuna göre Outlook araması için önce onay ister.
 - **Hatırlatma:** Görev açarken `1` (1 saat), `2` (yarın), `3` (3 gün), `4` (1 hafta), `5` (özel tarih), `0` (hatırlatmasız) seç. Program tarihi kendiliğinden belirlemez.
-- **Hatırlatma Taslağı / Tamamlandı / Yenile:** İş Masam'daki düğmelerden kullan. **Hiçbir e-posta otomatik gönderilmez.**
+- **Yanıtla / Tümüne Yanıtla / Tamamla / Yenile:** İş Masam'daki düğmelerden kullan. **Hiçbir e-posta otomatik gönderilmez.**
 
 ### Kısa örnek
 
@@ -24,7 +31,7 @@ Bir iş arkadaşından evrak bekliyorsun. İlgili e-postayı **Yanıt Bekliyorum
 
 Şirket bilgisayarında Notion, Trello veya başka bir harici iş takip servisine erişemeyen; yoğun Outlook trafiğini ayrıca Excel'e aktarmak istemeyen çalışanlar için. **Klasik Windows Outlook + kurum tarafından izin verilmiş VBA** gerekir. Yeni Outlook, Outlook Web ve mobil Outlook desteklenmez.
 
-## Kurulum — v0.9.1'de önemli değişiklik
+## Kurulum — V1.0 RC3
 
 Önceki test paketindeki `frmRadarIsMasam.frm` dosyası bazı bilgisayarlarda **&H80004005** hatası verdiği için **artık dağıtılmıyor**. Form **bir defa Outlook'un VBA editöründe boş olarak oluşturuluyor**; arayüz düğmelerini kod kendisi ekliyor.
 
@@ -37,7 +44,7 @@ Bir iş arkadaşından evrak bekliyorsun. İlgili e-postayı **Yanıt Bekliyorum
 5. **Debug → Compile VBAProject** ile kontrol et; `Ctrl + S` ile kaydet ve Outlook'u yeniden aç.
 6. Önce bir **test e-postasında** `Takip_2_YapacagimIs`, sonra `Radar_11_IsMasam` çalıştır. Görev satırını seçtiğinde e-posta metnini görebilmelisin.
 
-**Mevcut v0.8.3 kullanıcıları:** `TakipKolay` modülüne, `ThisOutlookSession` koduna veya Görevler içindeki **Takip Kolay** klasörüne dokunmayın. `RadarIsMasam` modülünü önce yedekleyin, ardından yeni dosyayla değiştirin; yalnızca formu yukarıdaki şekilde ekleyin. Form varsa tekrar oluşturmayın.
+**Mevcut v0.9.1 / RC1 / RC2 kullanıcıları:** Yalnızca mevcut `frmRadarIsMasam` formunun kodunu yedekleyip `src/frmRadarIsMasam_KODU.txt` ile değiştirin. `TakipKolay`, `RadarIsMasam`, `ThisOutlookSession` ve **özel makrolarınızın bulunduğu diğer modüllere dokunmayın.** Görevler içindeki **Takip Kolay** klasörünü silmeyin. Form zaten varsa tekrar oluşturmayın.
 
 **[Adım adım kurulum ve hata çözümü](docs/KURULUM.md)** · **[Form kurulum rehberi](docs/FORM_KURULUMU.md)** · **[Test planı](docs/TEST_PLANI.md)**
 
@@ -54,9 +61,9 @@ Proje **bağımsız bir üçüncü taraf iş takip sunucusu, telemetri veya uzak
 - **Kurulumda form elle oluşturulur**; bu henüz tek tıklamalı bir eklenti değildir.
 - Konuşma detaylarında Outlook'un bulabildiği en fazla **45 ileti** incelenir; en son **16 ileti** gösterilir; her iletiden en fazla **1.700 karakter** alınır. Yanıtların tamamı bulunamayabilir.
 - Taşınan, silinen veya başka depoya giden kaynak e-postanın kimliği çalışmayabilir; konu araması kesin eşleşme garantilemez.
-- Listede en fazla **600 görev** taranır. Görev panelinde yapılan **Tamamlandı** işlemi gerçek görev durumunu değiştirir.
+- Listede en fazla **600 görev** ve yaklaşık 7 saniyelik okuma süresi vardır. Görev panelinde yapılan **Tamamlandı** işlemi gerçek görev durumunu değiştirir.
 - Kullanıcı hatırlatma taslağını kendi kontrol edip göndermelidir; alıcı, metin ve önceki yazışmalar özellikle incelenmelidir.
-- **Beta:** Formun gerçek Outlook üzerinde derlendiği ve her senaryoda sorunsuz çalıştığı henüz doğrulanmadı.
+- **Beta:** RC3'teki tamamlananlar penceresi ve Yanıtla/Tümüne Yanıtla akışlarının farklı Outlook ortamlarında çalıştığı henüz doğrulanmadı.
 
 ## Hata bildirme ve katkı
 

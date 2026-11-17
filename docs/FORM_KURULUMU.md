@@ -1,31 +1,29 @@
-# İş Masam formunun kurulumu (v0.9.1)
+# İş Masam formu — V1.0 RC3 güncelleme
 
-**Önemli:** `frmRadarIsMasam.frm` dosyasını içeri aktarmayın. Önceki testte bazı kullanıcılarda `System Error &H80004005` oluştu. Bu pakette bozuk/eksik form dosyası yoktur.
+## Mevcut v0.9.1, RC1 veya RC2'den geçiş
+
+1. Klasik Outlook'ta `Alt + F11` açın.
+2. **Forms → frmRadarIsMasam** formunu seçin. **File → Export File** ile yedekleyin; varsa `.frx` dosyasını da beraber tutun.
+3. `F7` ile formun **kod penceresine** geçin.
+4. Eski kodun tamamını `src/frmRadarIsMasam_KODU.txt` dosyasındaki kodla değiştirin.
+5. **Debug → Compile VBAProject** yapın; hata varsa devam etmeyin ve yedeğe dönün.
+6. `Ctrl + S` ile kaydedin; Outlook'u tamamen kapatıp açın. `Alt + F8` → `Radar_11_IsMasam` komutunu çalıştırın.
+
+**Önemli:** `TakipKolay`, `RadarIsMasam`, `ThisOutlookSession` ve kişisel ek makrolarınızın bulunduğu `Module1` veya benzer modülleri silmeyin. Görevler → Takip Kolay klasörüne dokunmayın.
 
 ## İlk kurulum
 
-1. **Klasik** Outlook'ta `Alt + F11` tuşlarına bas. `Project - VBAProject.OTM` altında **Modules** bölümünü gör.
-2. **File → Import File** ile `src/IsYanitRadari.bas` ve `src/RadarIsMasam.bas` dosyalarını içeri al. Daha önce aynı adlı modüller varsa önce **Export File** ile yedekle; aynı isimden iki kopya bırakma.
-3. VBE penceresinde `[break]` yazıyorsa **Run → Reset** işlemini yap.
-4. Solda `VbaProject.OTM` seçiliyken **Insert → UserForm** seç. `UserForm1` adlı boş form oluşur.
-5. Form seçiliyken `F4` ile **Properties** aç, `(Name)` satırını **`frmRadarIsMasam`** yap. `Caption` dilediğin gibi olabilir.
-6. Form açıkken `F7` ile tasarım ekranından **kod penceresine** geç. `src/frmRadarIsMasam_KODU.txt` içindeki bütün metni kod penceresine yapıştır. `Option Explicit` satırı en başta olmalı.
-7. Form tasarımına manuel olarak düğme, kutu veya etiket ekleme; form ilk açıldığında bunları VBA koduyla oluşturur.
-8. **Debug → Compile VBAProject** çalıştır; hata yoksa `Ctrl + S` ile kaydet. Outlook'u kapatıp yeniden aç.
-9. Bir test e-postası seç → `Alt + F8` → `Takip_2_YapacagimIs`. Sonra `Radar_11_IsMasam` ile paneli aç.
+1. `src/IsYanitRadari.bas` ve `src/RadarIsMasam.bas` dosyalarını **File → Import File** ile yükleyin.
+2. **Insert → UserForm** ile boş form ekleyin; `F4` ile adını `frmRadarIsMasam` yapın.
+3. `F7` ile kod alanını açın; `src/frmRadarIsMasam_KODU.txt` içeriğini yapıştırın. Düğmeler otomatik oluşturulur.
+4. Derleyin, kaydedin, Outlook'u yeniden başlatıp test e-postasında deneyin.
 
-## Güncelleme yapıyorsan
+**Eski bozuk .frm dosyasını içe aktarmayın.** Bazı sistemlerde `&H80004005` hatası oluşuyordu.
 
-- `TakipKolay`, `ThisOutlookSession` ve Outlook içindeki **Takip Kolay** görev klasörünü değiştirme.
-- Eski `RadarIsMasam` modülünü önce **Export File** ile yedekleyip kaldır, ardından yeni `src/RadarIsMasam.bas` dosyasını import et.
-- `Forms` altında **`frmRadarIsMasam`** zaten varsa **ikinci form oluşturma**; `F7` ile kodunu açıp eski kodun tamamını yeni sürümdeki metinle değiştir.
-- Aynı adlı form görünmüyorsa yukarıdaki 4-7. adımları uygula.
+## RC3 testleri
 
-## Hata olursa
-
-- `System Error &H80004005` → Hatalı `.frm` dosyasını import etmeyi bırak; boş UserForm oluşturma yolunu kullan.
-- `Variable not defined` veya `frmRadarIsMasam not defined` → Yeni `RadarIsMasam.bas` sürümü formu adıyla, çalışma anında yükler. Hem modülün güncel olduğundan hem de form adının birebir doğru yazıldığından emin ol.
-- **Compile error** → Hata veren satırı ve uyarının tam metnini kontrol et. Yeni kodu rastgele başka modüllere yapıştırma.
-- Panel açılıyor ama e-posta içeriği yok → Kaynak mesaj taşınmış, silinmiş veya başka posta deposunda olabilir. **Orijinal E-postayı Aç** seçeneğinde Outlook araması sorulabilir.
-
-**Veri güvenliği:** Kurulum görevlere dokunmaz. Ancak formdaki **Tamamlandı** düğmesi kullanıldığında seçili görevin durumu gerçekten değiştirilir. Testleri deneme görevleriyle yap.
+- **Tüm açık işler** listesi tamamlanmışları göstermemeli.
+- **Tamamlanan** kartı ayrı pencere açmalı.
+- Soldaki sütun başlıkları hizalı olmalı.
+- **Yanıtla / Tümüne Yanıtla** kaynak e-postaya gerçek yanıt taslağı açmalı, otomatik göndermemeli.
+- Göndermeden önce **Kime / Bilgi (CC)** alanlarını mutlaka kontrol edin.

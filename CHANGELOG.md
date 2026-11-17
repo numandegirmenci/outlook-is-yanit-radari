@@ -1,5 +1,15 @@
 # Sürüm notları
 
+## V1.0 RC3 Genel Beta — 18 Kasım 2026
+
+- **Tüm açık işler** listesinden tamamlanan kayıtlar çıkarıldı. Tamamlananlar ayrı pencerede açılır.
+- Sol görev listesinin sütunları hizalandı.
+- Tek hatırlatma taslağı yerine gerçek Outlook **Yanıtla / Tümüne Yanıtla** taslakları eklendi.
+- **Hiçbir mesaj otomatik gönderilmez.** Alıcı ve CC alanları kullanıcı tarafından kontrol edilmelidir.
+- Kurulumda yalnızca form kodu değişir; diğer makrolar ve Outlook görevleri korunmalıdır.
+- **Beta:** Kod ve dosya bütünlüğü doğrulandı; RC3 gerçek Outlook'ta uçtan uca test edilmedi.
+
+
 ## v0.9.1 Genel Beta — 18 Kasım 2026
 
 - **İş Masam** için seçilen görevin e-posta metnini, konusunu, gönderenini ve alıcısını aynı pencerede gösteren VBA UserForm kodu eklendi.

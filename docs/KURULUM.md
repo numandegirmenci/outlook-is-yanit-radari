@@ -1,4 +1,4 @@
-# Kurulum ve güncelleme — v0.9.1 Genel Beta
+# Kurulum ve güncelleme — V1.0 RC3 Genel Beta
 
 Bu proje klasik Windows Outlook ve izin verilmiş VBA makrolarıyla çalışır. **Yeni Outlook** desteklenmez.
 
@@ -35,3 +35,8 @@ Bu proje klasik Windows Outlook ve izin verilmiş VBA makrolarıyla çalışır.
 - İlk testlerde kurum evrakı veya kişisel bilgiler içermeyen deneme e-postaları kullanın.
 - Görevler Exchange/Microsoft 365 ile eşitlenebilir. Harici üçüncü taraf sunucu kullanmamak, bütün bilgilerin yalnızca cihazda olduğu anlamına gelmez.
 - Kod beta aşamasındadır; hata raporlarını şirket verilerinden arındırın.
+
+
+## V1.0 RC3 güncellemesi
+
+v0.9.1/RC1/RC2 kuruluysa `Forms → frmRadarIsMasam` formunu yedekleyin; `F7` ile kodunu açıp `src/frmRadarIsMasam_KODU.txt` içeriğiyle değiştirin. Başka modülleri (kişisel `Module1` dahil) silmeyin. Detay: [form kurulumu](FORM_KURULUMU.md).

@@ -1,9 +1,15 @@
-# v0.9.1 Genel Beta — İş Masam'da e-posta içerikleri
+# V1.0 RC3 Genel Beta — İş Masam'da Açık İşler ve Gerçek Yanıt Taslakları
 
-**Ne yeni?** Görevini İş Masam'da seçtiğinde **yalnızca başlığı değil, e-postada yazılanları** da aynı pencerede görebiliyorsun. Outlook'un bulabildiği yazışma yanıtları da listelenebilir. Kaynak e-postaya dönmek, hatırlatma taslağı açmak ve işi tamamlamak için ayrı makrolar çalıştırmak gerekmiyor.
+Outlook İş ve Yanıt Radarı, harici bir iş takip servisine e-postaları aktarmadan klasik Outlook'taki işleri ve bekleyen yanıtları takip etmek isteyenler için geliştirilmiş açık kaynaklı bir araçtır.
 
-**Kurulum değişti:** Önceki testte `&H80004005` hatası veren bozuk `.frm` dosyası kaldırıldı. İlk kurulumda VBA editöründe boş **UserForm** oluşturup `src/frmRadarIsMasam_KODU.txt` içeriğini yapıştırmak gerekir. [Adım adım kurulum](docs/FORM_KURULUMU.md).
+**RC3 ile gelenler:**
 
-**Gizlilik:** Harici iş takip servisi yoktur. Yazışma metni panelde Outlook'tan okunur; ancak kurumsal Outlook/Exchange senkronizasyonu ayrı devam edebilir. Taslaklar kendiliğinden gönderilmez.
+- Açık işler ana listede; tamamlananlar ayrı pencerede.
+- Durum / Tarih / E-posta konusu alanları daha düzgün hizalandı.
+- **Yanıtla** ve **Tümüne Yanıtla** düğmeleri, Outlook'un gerçek cevap taslaklarını açıyor.
+- E-posta içeriği ve ilgili yazışmalar takip ekranında okunabiliyor.
+- Herhangi bir mesaj otomatik gönderilmiyor; tüm alıcıların kontrolü kullanıcıya ait.
 
-**Sürüm durumu:** Genel Beta — farklı Outlook ortamlarında derleme ve canlı test henüz tamamlanmamıştır. Önce test e-postasıyla deneyin.
+**Güncelleme:** V0.9.1 veya RC1/RC2 kullanıcıları sadece `frmRadarIsMasam` UserForm kodunu `src/frmRadarIsMasam_KODU.txt` ile değiştirmeli. Kişisel makrolar dahil diğer modülleri silmeyin. [Kurulum](docs/FORM_KURULUMU.md)
+
+**Durum:** Genel beta. RC3 yenilikleri gerçek Outlook'ta henüz doğrulanmadığından kararlı V1.0 olarak tanıtılmamalı. Kurumun makro güvenlik politikalarına uyun; hassas e-postaları GitHub'a yüklemeyin.

@@ -1,18 +1,17 @@
-# v0.9.1 test planı
+# V1.0 RC3 — Kontrol planı
 
-**Dikkat:** Testlerde kişisel/kurumsal gerçek e-posta kullanmayın. Önceki sürümün `.frm` dosyasını import etmeyin.
+**Beta:** Önce yalnızca test e-postaları ve deneme görevlerinde çalışın. Kurumdaki gerçek e-posta/ekleri GitHub'a paylaşmayın.
 
-1. `Alt + F11` → `Insert → UserForm` ile `frmRadarIsMasam` oluştur; kodunu yapıştır.
-2. `Debug → Compile VBAProject`: hata çıkmamalı. Hata çıkarsa dur; tam metni kaydet.
-3. Test e-postası seç → `Takip_2_YapacagimIs` → `0` (hatırlatmasız).
-4. `Radar_11_IsMasam`: tek pencere açılmalı; test görevi listede görünmeli.
-5. Görevi seç: ilk e-postanın **konu + tarih + gönderen + alıcı + metni** görünmeli.
-6. Ayrı test e-postasında `Takip_1_YanitBekliyorum` oluştur; **Yanıt Bekleyen** filtresinde görünmeli.
-7. Aynı konuşmada test yanıtı varsa, Yenile/yeniden seçim sonrası yeni mesaj görünmeli (Outlook Conversation desteği ve erişime bağlı).
-8. **Orijinal E-postayı Aç** kaynak mesajı göstermeli. Bulunamazsa Outlook araması için onay sorulmalı.
-9. **Hatırlatma Taslağı** açıldığında otomatik gönderim olmamalı; alıcıyı ve metni elle kontrol et.
-10. **Tamamlandı** düğmesini yalnızca test görevinde kullan; durum gerçekten DONE olmalı.
-11. `Takip_3_Islerim` raporunda Yapacağım İşler/ Yanıt Bekleyenler birbirine karışmamalı.
-12. Birden çok kez açma/kapama, 600'den fazla kayıt, Outlook klasörü taşıma, farklı Exchange hesapları gibi uç durumlar **henüz doğrulanmadı**.
+1. Mevcut formunuzu yedekleyip RC3 kodunu yükleyin. VBA **Debug → Compile** hatasız olmalı.
+2. `Radar_11_IsMasam` ile panel açılmalı; görev sayıları doğru görünmeli.
+3. **Tüm açık işler** tamamlananları göstermemeli.
+4. **Tamamlanan** kutusu ayrı pencere açmalı, yalnızca biten işleri göstermeli.
+5. Soldaki Durum / Tarih / Konu sütunları hizalı olmalı.
+6. Bir deneme görevi seçin; konu, kişi ve Outlook'tan okunan yazışma içeriği görünmeli.
+7. **Yanıtla** tuşu Outlook'un yanıt taslağını açmalı, göndermemeli. Alıcıyı doğrulayın.
+8. **Tümüne Yanıtla** aynı şekilde ReplyAll taslağını açmalı. CC/kendi adresinizi kontrol edin.
+9. Deneme görevinde tarih/durum değiştir, tamamla, yenile ve arama özelliklerini test edin.
+10. Eğer `Module1` gibi başka kişisel makro modülleriniz varsa **onların da** derlendiğini ve çalıştığını doğrulayın.
+11. 600'den fazla görev ve taşınmış e-posta gibi uç durumlarda sınırlamaların olduğunu kabul edin; çalıştığı iddiasında bulunmayın.
 
-Hata bildirirken yalnızca hata kodunu, işlem adını ve kişisel verilerden arındırılmış ekran görüntüsünü paylaşın.
+**V1.0 kararlı sürümü yalnızca uçtan uca testlerden sonra yayımlanmalıdır.**

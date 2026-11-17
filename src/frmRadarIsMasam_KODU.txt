@@ -1,103 +1,192 @@
-Option Explicit
+﻿Option Explicit
 
-' v0.9.1 genel beta: tek pencerede takip + gelen/gonderilen mail metni.
-' Veri Outlook'tan anlik okunur; gorev Body alanina kopyalanmaz.
-' Internet/HTTP/API, telemetry, otomatik gonderim, silme yoktur.
+' Is ve Yanit Radari - V1.0 RC3 / Ozel Test
+' Mevcut v0.9.1 formunun KOD PENCERESINDE tamamen degistirilir.
+' Ayrica frm/frx import etmeyin. Yeni modul veya harici servis yok.
+' Gorevleri listelerken Outlook'tan okur, yazisma icerigini sadece secildiginde okur.
 
 Private WithEvents lstIsler As MSForms.ListBox
 Private WithEvents cmbFiltre As MSForms.ComboBox
+Private WithEvents txtAra As MSForms.TextBox
 Private WithEvents btnAc As MSForms.CommandButton
 Private WithEvents btnHatirlat As MSForms.CommandButton
+Private WithEvents btnTumune As MSForms.CommandButton
 Private WithEvents btnTamam As MSForms.CommandButton
 Private WithEvents btnYenile As MSForms.CommandButton
 Private WithEvents btnKapat As MSForms.CommandButton
+Private WithEvents btnTarih As MSForms.CommandButton
+Private WithEvents btnKategori As MSForms.CommandButton
+Private WithEvents kartTum As MSForms.Label
+Private WithEvents kartYap As MSForms.Label
+Private WithEvents kartYanit As MSForms.Label
+Private WithEvents kartIncele As MSForms.Label
+Private WithEvents kartBiten As MSForms.Label
+
 Private txtYazisma As MSForms.TextBox
 Private lblBilgi As MSForms.Label
-Private lblBaslik As MSForms.Label
 Private lblAlt As MSForms.Label
 Private takipKlasoru As Outlook.MAPIFolder
+Private arayuzHazir As Boolean
+Private listeGuncelleniyor As Boolean
+Private okumaNotu As String
+Private hataliKayit As Long
+Private kayitSayisi As Long
+Private tarananSayisi As Long
+Private kayitlar() As Variant
+Private sira() As Long
+Private sayac(0 To 4) As Long
+' Tamamlananlar, ayni formun ikinci bir modeless kopyasinda acilir.
+' Yeni .frm/.frx dosyasi gerekmez; her iki pencere de ayni kodu kullanir.
+Private pencereTamamlanan As Boolean
+Private tamamlananPenceresi As frmRadarIsMasam
+
 Private Const MAX_GOREV As Long = 600
 Private Const MAX_KONUSMA As Long = 45
 Private Const MAX_GOSTER As Long = 16
 Private Const MAX_MAIL_METNI As Long = 1700
+Private Const MAX_OKUMA_SANIYE As Long = 7
+Private Const MAX_KONUSMA_SANIYE As Long = 5
 Private Const ALAN_DURUM As String = "TKState"
 Private Const ALAN_KONU As String = "TKTopic"
 Private Const ALAN_KAYNAK As String = "TKMailID"
 Private Const ALAN_STORE As String = "TKMailStore"
+Private Const ALAN_KISI As String = "TKPerson"
 Private Const ALAN_ALICI As String = "TKRecipient"
 Private Const ESKI_METIN_AYRACI As String = "---- KAYNAK E-POSTA METNI ----"
 
 Private Sub UserForm_Initialize()
     On Error GoTo Hata
-    Me.Width = 895
-    Me.Height = 706
-    Me.Caption = "Is Masam | Is ve Yanit Radari v0.9.1"
-    Me.BackColor = RGB(245, 248, 251)
+    arayuzHazir = False
+    Me.Width = 948
+    Me.Height = 648
+    Me.Caption = "İş Masam | İş ve Yanıt Radarı - V1.0 RC3"
+    Me.BackColor = RGB(246, 248, 252)
 
-    Set lblBaslik = Me.Controls.Add("Forms.Label.1", "hdr", True)
-    With lblBaslik
-        .Left = 18: .Top = 11: .Width = 550: .Height = 25
-        .Caption = "Is Masam - Takipler ve yazisma icerigi"
-        .Font.Size = 15: .Font.Bold = True
-        .BackStyle = 0
+    Dim zemin As MSForms.Label, ad As MSForms.Label, aciklama As MSForms.Label
+    Set zemin = Etiket("ustZemin", "", 0, 0, 946, 70, 9, True)
+    zemin.BackColor = RGB(19, 47, 79)
+    zemin.BackStyle = fmBackStyleOpaque
+    Set ad = Etiket("ustBaslik", "İŞ MASAM", 18, 12, 310, 28, 19, True)
+    ad.ForeColor = vbWhite
+    Set aciklama = Etiket("ustAlt", "Outlook içindeki işleriniz, yanıtlarınız ve yazışmalarınız tek ekranda", _
+                         18, 42, 884, 22, 10, False)
+    aciklama.ForeColor = RGB(206, 222, 242)
+
+    Set kartTum = KartOlustur("kartTum", 18, "AÇIK İŞLER", RGB(227, 237, 251))
+    Set kartYap = KartOlustur("kartYap", 204, "YAPACAKLARIM", RGB(225, 245, 235))
+    Set kartYanit = KartOlustur("kartYanit", 390, "YANIT BEKLEYEN", RGB(224, 239, 253))
+    Set kartIncele = KartOlustur("kartIncele", 576, "İNCELENECEK", RGB(255, 241, 215))
+    Set kartBiten = KartOlustur("kartBiten", 762, "TAMAMLANAN", RGB(234, 237, 241))
+
+    Dim sol As MSForms.Label, sag As MSForms.Label, aramaYazi As MSForms.Label
+    Set sol = Etiket("solBaslik", "TAKİP EDİLEN İŞLER", 18, 150, 510, 24, 11, True)
+    sol.ForeColor = RGB(30, 55, 79)
+    Set sag = Etiket("sagBaslik", "YAZIŞMA İÇERİĞİ", 542, 150, 384, 24, 11, True)
+    sag.ForeColor = RGB(30, 55, 79)
+    Set aramaYazi = Etiket("aramaYazi", "Ara", 18, 179, 32, 19, 10, False)
+
+    Set txtAra = Me.Controls.Add("Forms.TextBox.1", "ara", True)
+    With txtAra
+        .Left = 51: .Top = 175: .Width = 266: .Height = 23
+        .Font.Name = "Segoe UI": .Font.Size = 10
+        .ControlTipText = "Konu, kişi, iş durumu veya tarih metninde ara. Postalar tekrar taranmaz."
     End With
 
     Set cmbFiltre = Me.Controls.Add("Forms.ComboBox.1", "filtre", True)
     With cmbFiltre
-        .Left = 18: .Top = 43: .Width = 185: .Height = 23
+        .Left = 328: .Top = 175: .Width = 200: .Height = 23
         .Style = fmStyleDropDownList
-        .AddItem "Tum isler"
-        .AddItem "Yapacagim isler"
-        .AddItem "Yanit bekleyenler"
-        .AddItem "Incelenecekler"
-        .AddItem "Tamamlananlar"
+        .Font.Name = "Segoe UI": .Font.Size = 10
+        .AddItem "Tüm açık işler"
+        .AddItem "Yapacağım işler"
+        .AddItem "Yanıt bekleyenler"
+        .AddItem "İncelenecekler"
         .ListIndex = 0
     End With
 
-    Set lblBilgi = Me.Controls.Add("Forms.Label.1", "bilgi", True)
-    With lblBilgi
-        .Left = 218: .Top = 45: .Width = 640: .Height = 25
-        .BackStyle = 0: .Caption = "Outlook gorevleri okunuyor..."
-        .ForeColor = RGB(72, 91, 106)
-    End With
+    ' Her baslik ListBox sutununun baslangicina hizalidir.
+    ' Oransiz bosluklarla baslik olusturulmaz (Segoe UI orantili yazidir).
+    Dim sutun As MSForms.Label, baslik As MSForms.Label
+    Set sutun = Etiket("sutunZemin", "", 18, 202, 510, 22, 9, True)
+    sutun.BackStyle = fmBackStyleOpaque
+    sutun.BackColor = RGB(225, 233, 241)
+    Set baslik = Etiket("sutunDurum", "DURUM", 20, 205, 82, 16, 9, True)
+    baslik.ForeColor = RGB(52, 72, 90)
+    Set baslik = Etiket("sutunTarih", "TARİH", 106, 205, 121, 16, 9, True)
+    baslik.ForeColor = RGB(52, 72, 90)
+    Set baslik = Etiket("sutunKonu", "E-POSTA KONUSU / İLGİLİ KİŞİ", 232, 205, 292, 16, 9, True)
+    baslik.ForeColor = RGB(52, 72, 90)
 
     Set lstIsler = Me.Controls.Add("Forms.ListBox.1", "isler", True)
     With lstIsler
-        .Left = 18: .Top = 74: .Width = 839: .Height = 181
-        .ColumnCount = 4: .ColumnWidths = "111 pt;90 pt;623 pt;0 pt"
+        .Left = 18: .Top = 224: .Width = 510: .Height = 327
+        .ColumnCount = 4: .ColumnWidths = "86 pt;126 pt;293 pt;0 pt"
         .MultiSelect = fmMultiSelectSingle
-        .IntegralHeight = False: .Font.Size = 10
-    End With
-
-    Set lblAlt = Me.Controls.Add("Forms.Label.1", "detayBaslik", True)
-    With lblAlt
-        .Left = 18: .Top = 264: .Width = 832: .Height = 25
-        .Caption = "E-posta ve konusma icerigi (gelen mailler dahil)"
-        .Font.Size = 12: .Font.Bold = True: .BackStyle = 0
+        .IntegralHeight = False
+        .Font.Name = "Segoe UI": .Font.Size = 9
+        .BackColor = vbWhite
+        .ControlTipText = "Bir kayıt seçerek yazışmayı görüntüleyin."
     End With
 
     Set txtYazisma = Me.Controls.Add("Forms.TextBox.1", "yazisma", True)
     With txtYazisma
-        .Left = 18: .Top = 290: .Width = 839: .Height = 295
-        .MultiLine = True: .WordWrap = True: .ScrollBars = fmScrollBarsVertical
+        .Left = 542: .Top = 176: .Width = 384: .Height = 375
+        .MultiLine = True: .WordWrap = True
+        .ScrollBars = fmScrollBarsVertical
         .Locked = True: .TabKeyBehavior = False
-        .Font.Name = "Calibri": .Font.Size = 10
-        .Text = "Detayini gormek icin bir takip kaydi secin."
+        .Font.Name = "Segoe UI": .Font.Size = 10
+        .BackColor = vbWhite
+        .Text = "Bir iş seçtiğinizde ilgili e-posta ve Outlook'un bulabildiği yanıtlar burada gösterilir."
     End With
 
-    Set btnAc = Dugme("mailAc", "Orijinal E-postayi Ac", 18, 596, 167)
-    Set btnHatirlat = Dugme("hatirlat", "Hatirlatma Taslagi", 194, 596, 153)
-    Set btnTamam = Dugme("tamamla", "Tamamlandi", 356, 596, 114)
-    Set btnYenile = Dugme("yenile", "Yenile", 479, 596, 95)
-    Set btnKapat = Dugme("kapat", "Kapat", 745, 596, 112)
+    Set lblBilgi = Etiket("bilgi", "Outlook görevleri okunuyor...", 18, 558, 908, 18, 9, False)
+    lblBilgi.ForeColor = RGB(80, 99, 115)
 
-    Me.Controls("filtre").ListIndex = 0
+    Set btnAc = Dugme("mailAc", "E-postayı Aç", 18, 583, 112)
+    Set btnHatirlat = Dugme("hatirlat", "Yanıtla", 138, 583, 100)
+    btnHatirlat.ControlTipText = "Gercek Outlook Yanitla taslagi olusturur. Otomatik gondermez."
+    Set btnTumune = Dugme("tumune", "Tümüne Yanıtla", 245, 583, 116)
+    btnTumune.ControlTipText = "Gercek Outlook Tumune Yanitla taslagi olusturur. Tum alicilari kontrol edin."
+    Set btnKategori = Dugme("kategori", "Durum Değiştir", 368, 583, 113)
+    Set btnTarih = Dugme("tarih", "Tarih Seç", 488, 583, 98)
+    Set btnTamam = Dugme("tamamla", "Tamamla", 593, 583, 91)
+    Set btnYenile = Dugme("yenile", "Yenile", 691, 583, 82)
+    Set btnKapat = Dugme("kapat", "Kapat", 817, 583, 109)
+
+    arayuzHazir = True
     Yukle
     Exit Sub
 Hata:
-    MsgBox "Is Masam paneli yuklenemedi. Hata " & Err.Number & _
-           ": " & Err.Description, vbExclamation, "Is ve Yanit Radari"
+    MsgBox "İş Masam paneli hazırlanamadı. Hata " & Err.Number & _
+           ": " & Err.Description, vbExclamation, "İş ve Yanıt Radarı"
 End Sub
+
+Private Function Etiket(ByVal ad As String, ByVal metin As String, ByVal x As Single, _
+                        ByVal y As Single, ByVal w As Single, ByVal h As Single, _
+                        ByVal boyut As Single, ByVal kalin As Boolean) As MSForms.Label
+    Dim e As MSForms.Label
+    Set e = Me.Controls.Add("Forms.Label.1", ad, True)
+    With e
+        .Left = x: .Top = y: .Width = w: .Height = h
+        .Caption = metin
+        .BackStyle = fmBackStyleTransparent
+        .Font.Name = "Segoe UI": .Font.Size = boyut
+        .Font.Bold = kalin
+    End With
+    Set Etiket = e
+End Function
+
+Private Function KartOlustur(ByVal ad As String, ByVal x As Single, _
+                             ByVal baslik As String, ByVal renk As Long) As MSForms.Label
+    Dim e As MSForms.Label
+    Set e = Etiket(ad, baslik, x, 82, 173, 55, 10, True)
+    e.BackStyle = fmBackStyleOpaque
+    e.BackColor = renk
+    e.ForeColor = RGB(25, 53, 81)
+    e.TextAlign = fmTextAlignCenter
+    e.ControlTipText = "Bu kategoriyi filtrelemek için tıklayın."
+    Set KartOlustur = e
+End Function
 
 Private Function Dugme(ByVal ad As String, ByVal yazi As String, _
                         ByVal x As Single, ByVal y As Single, ByVal w As Single) As MSForms.CommandButton
@@ -105,7 +194,8 @@ Private Function Dugme(ByVal ad As String, ByVal yazi As String, _
     Set b = Me.Controls.Add("Forms.CommandButton.1", ad, True)
     With b
         .Left = x: .Top = y: .Width = w: .Height = 29
-        .Caption = yazi: .Font.Size = 10
+        .Caption = yazi
+        .Font.Name = "Segoe UI": .Font.Size = 9
     End With
     Set Dugme = b
 End Function
@@ -151,69 +241,269 @@ Private Function DurumAdi(ByVal kod As String) As String
 End Function
 
 Private Function FiltreUygun(ByVal kod As String) As Boolean
+    If pencereTamamlanan Then
+        ' Tamamlananlar yalnizca ayri pencerede gorunur.
+        FiltreUygun = (kod = "DONE")
+        Exit Function
+    End If
+    If kod = "DONE" Then Exit Function
     Select Case cmbFiltre.ListIndex
         Case 1: FiltreUygun = (kod = "TODO")
         Case 2: FiltreUygun = (kod = "WAIT")
         Case 3: FiltreUygun = (kod = "REVIEW")
-        Case 4: FiltreUygun = (kod = "DONE")
         Case Else: FiltreUygun = True
     End Select
 End Function
 
-Private Sub Yukle()
+Private Sub Yukle(Optional ByVal odakID As String = "")
     On Error GoTo Hata
-    Dim nesne As Object, t As Outlook.TaskItem
-    Dim kod As String, konu As String, vade As String
-    Dim toplam As Long, goster As Long, sayfa As Long, idx As Long
-    If lstIsler Is Nothing Then Exit Sub
-    lstIsler.Clear
-    txtYazisma.Text = "Detayini gormek icin bir takip kaydi secin."
+    Dim nesne As Object, t As Outlook.TaskItem, ogeler As Outlook.Items
+    Dim konu As String, kisi As String, kod As String, vade As String
+    Dim gun As Date, no As Long, i As Long, baslama As Date
+
+    If Not arayuzHazir Then Exit Sub
+    kayitSayisi = 0: tarananSayisi = 0: hataliKayit = 0
+    okumaNotu = ""
+    Erase kayitlar: Erase sira
+    For i = 0 To 4: sayac(i) = 0: Next i
+    ReDim kayitlar(1 To MAX_GOREV, 1 To 6)
     If takipKlasoru Is Nothing Then Set takipKlasoru = Klasor()
     If takipKlasoru Is Nothing Then
-        lblBilgi.Caption = "Henuz takip klasoru yok. Once test e-postasi takibe alin."
+        KartlariYaz
+        ListeyiGoster
+        lblBilgi.Caption = "Takip klasoru bulunamadi. Once test e-postasini takibe alin."
         Exit Sub
     End If
-    For Each nesne In takipKlasoru.Items
-        If sayfa >= MAX_GOREV Then Exit For
-        sayfa = sayfa + 1
+
+    Set ogeler = takipKlasoru.Items
+    ' En yeni kayitlari once oku. Sort sadece koleksiyonun sirasini etkiler.
+    On Error Resume Next
+    ogeler.Sort "[CreationTime]", True
+    Err.Clear
+    On Error GoTo Hata
+    baslama = Now
+    ' Burada e-posta govdesi veya konusma GORUNTULENMEZ; sadece gorev bilgisi.
+    For Each nesne In ogeler
+        If tarananSayisi >= MAX_GOREV Then
+            okumaNotu = "Liste siniri: En yeni 600 oge okundu. Daha eskiler eksik olabilir."
+            Exit For
+        End If
+        If DateDiff("s", baslama, Now) >= MAX_OKUMA_SANIYE Then
+            okumaNotu = "Hiz icin okuma 7 saniyede durdu. Liste kismi olabilir."
+            Exit For
+        End If
+        tarananSayisi = tarananSayisi + 1
         If TypeOf nesne Is Outlook.TaskItem Then
             Set t = nesne
             On Error GoTo KayitHatasi
-            toplam = toplam + 1
             kod = Durum(t)
-            If FiltreUygun(kod) Then
-                konu = Alan(t, ALAN_KONU)
-                If Len(konu) = 0 Then konu = t.Subject
-                If Left$(konu, 8) = "[Takip] " Then konu = Mid$(konu, 9)
-                vade = "Tarihsiz"
-                If Year(t.DueDate) > 1900 And Year(t.DueDate) < 4000 Then
-                    vade = Format$(t.DueDate, "dd.mm.yyyy")
+            konu = Alan(t, ALAN_KONU)
+            If Len(konu) = 0 Then konu = t.Subject
+            If Left$(konu, 8) = "[Takip] " Then konu = Mid$(konu, 9)
+            kisi = Alan(t, ALAN_KISI)
+            vade = "Tarihsiz"
+            gun = 0
+            If Year(t.DueDate) >= 2020 And Year(t.DueDate) <= 2100 Then
+                gun = DateValue(t.DueDate)
+                vade = Format$(gun, "dd.mm.yyyy")
+                If kod <> "DONE" Then
+                    If gun < Date Then vade = "Gecikti " & vade
+                    If gun = Date Then vade = "Bugun " & vade
                 End If
-                lstIsler.AddItem DurumAdi(kod)
-                idx = lstIsler.ListCount - 1
-                lstIsler.List(idx, 1) = vade
-                lstIsler.List(idx, 2) = Left$(konu, 250)
-                lstIsler.List(idx, 3) = t.EntryID
-                goster = goster + 1
             End If
+            kayitSayisi = kayitSayisi + 1
+            no = kayitSayisi
+            kayitlar(no, 1) = kod
+            kayitlar(no, 2) = vade
+            kayitlar(no, 3) = Left$(konu, 250)
+            kayitlar(no, 4) = Left$(kisi, 150)
+            kayitlar(no, 5) = t.EntryID
+            If gun > 0 Then
+                kayitlar(no, 6) = CDbl(gun)
+            Else
+                kayitlar(no, 6) = 999999#
+            End If
+            If kod = "DONE" Then kayitlar(no, 6) = CDbl(kayitlar(no, 6)) + 2000000#
+            Select Case kod
+                Case "TODO": sayac(1) = sayac(1) + 1
+                Case "WAIT": sayac(2) = sayac(2) + 1
+                Case "REVIEW": sayac(3) = sayac(3) + 1
+                Case "DONE": sayac(4) = sayac(4) + 1
+            End Select
             GoTo Devam
 KayitHatasi:
+            hataliKayit = hataliKayit + 1
             Err.Clear
             Resume Devam
 Devam:
             On Error GoTo Hata
         End If
     Next nesne
-    lblBilgi.Caption = CStr(goster) & " is listelendi. Kayitlar Outlook'ta kalir." & _
-                       IIf(sayfa >= MAX_GOREV, " (Ilk 600 oge tarandi)", "")
+    sayac(0) = kayitSayisi - sayac(4)
+
+    If kayitSayisi > 0 Then
+        ReDim sira(1 To kayitSayisi)
+        For i = 1 To kayitSayisi: sira(i) = i: Next i
+        Sirala
+    End If
+    KartlariYaz
+    ListeyiGoster odakID
+    If lstIsler.ListIndex >= 0 Then lstIsler_Click
     Exit Sub
 Hata:
-    MsgBox "Gorev listesi okunamadi. Hata " & Err.Number & ": " & _
-           Err.Description, vbExclamation, "Is ve Yanit Radari"
+    lblBilgi.Caption = "Gorev listesi okunamadi. Hata " & Err.Number & ": " & Err.Description
+End Sub
+
+Private Sub Sirala()
+    Dim i As Long, j As Long, tut As Long
+    ' En fazla 600 kayıt; Outlook'a tekrar sorgu göndermeden bellek içinde sıralama.
+    For i = 2 To kayitSayisi
+        tut = sira(i)
+        j = i - 1
+        Do While j >= 1
+            If CDbl(kayitlar(sira(j), 6)) <= CDbl(kayitlar(tut, 6)) Then Exit Do
+            sira(j + 1) = sira(j)
+            j = j - 1
+        Loop
+        sira(j + 1) = tut
+    Next i
+End Sub
+
+Private Sub KartlariYaz()
+    kartTum.Caption = "AÇIK İŞLER" & vbCrLf & CStr(sayac(0))
+    kartYap.Caption = "YAPACAKLARIM" & vbCrLf & CStr(sayac(1))
+    kartYanit.Caption = "YANIT BEKLEYEN" & vbCrLf & CStr(sayac(2))
+    kartIncele.Caption = "İNCELENECEK" & vbCrLf & CStr(sayac(3))
+    kartBiten.Caption = "TAMAMLANAN" & vbCrLf & CStr(sayac(4))
+End Sub
+
+Private Sub ListeyiGoster(Optional ByVal odakID As String = "")
+    On Error GoTo Hata
+    Dim i As Long, k As Long, ix As Long, bulunan As Long
+    Dim q As String, metin As String, secimID As String
+    If Not arayuzHazir Or listeGuncelleniyor Then Exit Sub
+    listeGuncelleniyor = True
+    secimID = odakID
+    If Len(secimID) = 0 And lstIsler.ListIndex >= 0 Then
+        secimID = CStr(lstIsler.List(lstIsler.ListIndex, 3))
+    End If
+    lstIsler.Clear
+    q = Trim$(txtAra.Text)
+    For i = 1 To kayitSayisi
+        k = sira(i)
+        If FiltreUygun(CStr(kayitlar(k, 1))) Then
+            metin = CStr(kayitlar(k, 3)) & " " & CStr(kayitlar(k, 4)) & " " & _
+                    DurumAdi(CStr(kayitlar(k, 1))) & " " & CStr(kayitlar(k, 2))
+            If Len(q) = 0 Or InStr(1, metin, q, vbTextCompare) > 0 Then
+                lstIsler.AddItem DurumAdi(CStr(kayitlar(k, 1)))
+                ix = lstIsler.ListCount - 1
+                lstIsler.List(ix, 1) = CStr(kayitlar(k, 2))
+                lstIsler.List(ix, 2) = CStr(kayitlar(k, 3)) & _
+                    IIf(Len(CStr(kayitlar(k, 4))) > 0, " | " & CStr(kayitlar(k, 4)), "")
+                lstIsler.List(ix, 3) = CStr(kayitlar(k, 5))
+                bulunan = bulunan + 1
+                If Len(secimID) > 0 Then
+                    If secimID = CStr(kayitlar(k, 5)) Then lstIsler.ListIndex = ix
+                End If
+            End If
+        End If
+    Next i
+    If pencereTamamlanan Then
+        lblBilgi.Caption = CStr(bulunan) & " tamamlanan kayit listeleniyor. " & _
+                           CStr(kayitSayisi) & " takip kaydi okundu."
+    Else
+        lblBilgi.Caption = CStr(bulunan) & " acik is listeleniyor / " & _
+                           CStr(sayac(0)) & " acik is. Arama bu listededir."
+    End If
+    If Len(okumaNotu) > 0 Then lblBilgi.Caption = lblBilgi.Caption & " " & okumaNotu
+    If hataliKayit > 0 Then lblBilgi.Caption = lblBilgi.Caption & _
+                                     " Okunamayan gorev: " & CStr(hataliKayit)
+    If lstIsler.ListCount = 0 Then
+        txtYazisma.Text = "Bu aramada veya kategoride is bulunamadi."
+    ElseIf lstIsler.ListIndex = -1 Then
+        txtYazisma.Text = "Soldan bir is secin; Outlook yazismasi burada gosterilecektir."
+    End If
+    listeGuncelleniyor = False
+    Exit Sub
+Hata:
+    listeGuncelleniyor = False
+    lblBilgi.Caption = "Liste hazirlanamadi. Hata " & Err.Number & ": " & Err.Description
 End Sub
 
 Private Sub cmbFiltre_Change()
-    If Not lstIsler Is Nothing Then Yukle
+    If arayuzHazir Then ListeyiGoster
+End Sub
+
+Private Sub txtAra_Change()
+    If arayuzHazir Then ListeyiGoster
+End Sub
+
+Private Sub kartTum_Click()
+    cmbFiltre.ListIndex = 0
+End Sub
+Private Sub kartYap_Click()
+    cmbFiltre.ListIndex = 1
+End Sub
+Private Sub kartYanit_Click()
+    cmbFiltre.ListIndex = 2
+End Sub
+Private Sub kartIncele_Click()
+    cmbFiltre.ListIndex = 3
+End Sub
+Private Sub kartBiten_Click()
+    On Error GoTo Hata
+    If pencereTamamlanan Then Exit Sub
+    ' Formun ikinci kopyasi: yeni .frm/.frx veya yeni makro gerektirmez.
+    ' Ayni anda tek bir "Tamamlananlar" penceresi acik tutulur.
+    If Not tamamlananPenceresi Is Nothing Then
+        On Error Resume Next
+        If tamamlananPenceresi.Visible Then
+            ' Pencere zaten acik, ikinci kopya olusturma.
+            Exit Sub
+        End If
+        Set tamamlananPenceresi = Nothing
+        On Error GoTo Hata
+    End If
+    Set tamamlananPenceresi = New frmRadarIsMasam
+    tamamlananPenceresi.TamamlananPenceresiniHazirla
+    tamamlananPenceresi.Show vbModeless
+    Exit Sub
+Hata:
+    MsgBox "Tamamlananlar penceresi acilamadi. Hata " & Err.Number & _
+           ": " & Err.Description, vbExclamation, "Is ve Yanit Radari"
+End Sub
+
+' Tamamlananlar icin AYNI formun yeni ornegini kullanir.
+Public Sub TamamlananPenceresiniHazirla()
+    On Error GoTo Hata
+    pencereTamamlanan = True
+    Me.Caption = "Tamamlanan İşler | İş ve Yanıt Radarı - V1.0 RC3"
+    Me.Controls("ustBaslik").Caption = "TAMAMLANAN İŞLER"
+    Me.Controls("ustAlt").Caption = _
+        "Bitirilen görevler ayrı pencerededir. Kaynak yazışmayı okuyabilir ve açabilirsiniz."
+    Me.Controls("solBaslik").Caption = "TAMAMLANAN KAYITLAR"
+    kartTum.Visible = False
+    kartYap.Visible = False
+    kartYanit.Visible = False
+    kartIncele.Visible = False
+    kartBiten.Left = 18
+    kartBiten.Width = 908
+    kartBiten.ControlTipText = "Bu pencerede sadece tamamlanmis isler listelenir."
+    cmbFiltre.Clear
+    cmbFiltre.AddItem "Tamamlananlar"
+    cmbFiltre.ListIndex = 0
+    btnHatirlat.Visible = False
+    btnTumune.Visible = False
+    btnKategori.Visible = False
+    btnTarih.Visible = False
+    btnTamam.Visible = False
+    btnYenile.Left = 138
+    txtYazisma.Text = "Soldan tamamlanan bir kayit secin."
+    ListeyiGoster
+    Exit Sub
+Hata:
+    MsgBox "Tamamlananlar gorunumu hazirlanamadi. Hata " & Err.Number & _
+           ": " & Err.Description, vbExclamation
 End Sub
 
 Private Function SeciliGorev() As Outlook.TaskItem
@@ -245,31 +535,54 @@ Private Function KaynakMail(ByVal t As Outlook.TaskItem) As Outlook.MailItem
 Bitti:
 End Function
 
+Private Function GorevTarihiMetni(ByVal t As Outlook.TaskItem) As String
+    On Error GoTo Hata
+    GorevTarihiMetni = "Tarih belirtilmedi"
+    If t.ReminderSet Then
+        GorevTarihiMetni = Format$(t.ReminderTime, "dd.mm.yyyy HH:nn") & " (hatirlatma acik)"
+    ElseIf Year(t.DueDate) >= 2020 And Year(t.DueDate) <= 2100 Then
+        GorevTarihiMetni = Format$(t.DueDate, "dd.mm.yyyy") & " (hatirlatma kapali)"
+    End If
+    Exit Function
+Hata:
+    GorevTarihiMetni = "Tarih okunamadi"
+End Function
+
 Private Sub lstIsler_Click()
     On Error GoTo Hata
     Dim t As Outlook.TaskItem, m As Outlook.MailItem, konu As String
+    Dim kisi As String, ayrinti As String
+    If listeGuncelleniyor Then Exit Sub
     Set t = SeciliGorev()
     If t Is Nothing Then
-        txtYazisma.Text = "Gorev bulunamadi; Yenile'yi kullanin."
+        txtYazisma.Text = "Gorev kaydi bulunamadi. Yenile'yi deneyin."
         Exit Sub
     End If
     konu = Alan(t, ALAN_KONU)
     If Len(konu) = 0 Then konu = t.Subject
-    txtYazisma.Text = "Outlook'taki yazisma okunuyor..."
+    kisi = Alan(t, ALAN_KISI)
+    If Len(Trim$(kisi)) = 0 Then kisi = "Belirtilmedi"
+    ayrinti = "IS BILGILERI" & vbCrLf & String$(58, "=") & vbCrLf & _
+        "Konu: " & konu & vbCrLf & _
+        "Durum: " & DurumAdi(Durum(t)) & vbCrLf & _
+        "Ilgili kisi: " & kisi & vbCrLf & _
+        "Tarih: " & GorevTarihiMetni(t) & vbCrLf & _
+        String$(58, "=") & vbCrLf & vbCrLf
+    txtYazisma.Text = ayrinti & "Outlook yazismasi okunuyor..."
     Set m = KaynakMail(t)
     If m Is Nothing Then
-        txtYazisma.Text = "KONU: " & konu & vbCrLf & vbCrLf & _
-            "Kaynak e-postaya erisilemedi. Mesaj tasinmis, silinmis veya arsivlenmis olabilir." & _
-            vbCrLf & "Orijinal E-postayi Ac butonuyla konuya gore Outlook aramasi yapabilirsiniz."
+        txtYazisma.Text = ayrinti & "Kaynak e-postaya su an erisilemiyor. " & _
+            "Mesaj tasinmis, silinmis veya arsivlenmis olabilir." & vbCrLf & _
+            "E-postayi Ac dugmesi Outlook aramasi onerebilir."
         If InStr(1, t.Body, ESKI_METIN_AYRACI, vbTextCompare) > 0 Then
             txtYazisma.Text = txtYazisma.Text & vbCrLf & vbCrLf & _
-                "Eski takipte kaydedilmis icerik:" & vbCrLf & _
+                "ESKI TAKIPTE KAYITLI KAYNAK METIN:" & vbCrLf & _
                 Mid$(t.Body, InStr(1, t.Body, ESKI_METIN_AYRACI, vbTextCompare) + _
                 Len(ESKI_METIN_AYRACI), 1800)
         End If
         Exit Sub
     End If
-    txtYazisma.Text = YazismaOku(m)
+    txtYazisma.Text = ayrinti & YazismaOku(m)
     txtYazisma.SelStart = 0
     Exit Sub
 Hata:
@@ -292,12 +605,14 @@ End Function
 
 Private Sub KonusmaTopla(ByVal ogeler As Object, ByVal konusma As Outlook.Conversation, _
                         ByVal koleksiyon As Collection, ByVal gorulen As Object, _
-                        ByVal seviye As Long)
+                        ByVal seviye As Long, ByVal baslama As Date)
     On Error GoTo Bitti
     Dim oge As Object, alt As Object, key As String
     If ogeler Is Nothing Or seviye > 12 Then Exit Sub
+    If DateDiff("s", baslama, Now) >= MAX_KONUSMA_SANIYE Then Exit Sub
     For Each oge In ogeler
         If koleksiyon.Count >= MAX_KONUSMA Then Exit For
+        If DateDiff("s", baslama, Now) >= MAX_KONUSMA_SANIYE Then Exit For
         If TypeOf oge Is Outlook.MailItem Then
             key = MesajAnahtar(oge)
             If Not gorulen.Exists(key) Then
@@ -310,7 +625,7 @@ Private Sub KonusmaTopla(ByVal ogeler As Object, ByVal konusma As Outlook.Conver
         Set alt = konusma.GetChildren(oge)
         Err.Clear
         On Error GoTo Bitti
-        If Not alt Is Nothing Then KonusmaTopla alt, konusma, koleksiyon, gorulen, seviye + 1
+        If Not alt Is Nothing Then KonusmaTopla alt, konusma, koleksiyon, gorulen, seviye + 1, baslama
     Next oge
 Bitti:
 End Sub
@@ -322,6 +637,8 @@ Private Function YazismaOku(ByVal kaynak As Outlook.MailItem) As String
     Dim dizi() As Outlook.MailItem, tmp As Outlook.MailItem
     Dim i As Long, j As Long, adet As Long, ilk As Long
     Dim m As Outlook.MailItem, metin As String, satir As String
+    Dim kimden As String, kime As String, konu As String, baslama As Date
+    baslama = Now
     Set mailler = New Collection
     Set gorulen = CreateObject("Scripting.Dictionary")
     On Error Resume Next
@@ -329,13 +646,14 @@ Private Function YazismaOku(ByVal kaynak As Outlook.MailItem) As String
     If Not konusma Is Nothing Then Set kokler = konusma.GetRootItems
     Err.Clear
     On Error GoTo Hata
-    If Not kokler Is Nothing Then KonusmaTopla kokler, konusma, mailler, gorulen, 0
+    If Not kokler Is Nothing Then KonusmaTopla kokler, konusma, mailler, gorulen, 0, baslama
     If Not gorulen.Exists(MesajAnahtar(kaynak)) Then mailler.Add kaynak
     adet = mailler.Count
     ReDim dizi(1 To adet)
     For i = 1 To adet
         Set dizi(i) = mailler(i)
     Next i
+    ' Yalnizca Outlook'un bulabildigi konusma kayitlari tarihe gore dizilir.
     For i = 2 To adet
         Set tmp = dizi(i)
         j = i - 1
@@ -346,33 +664,48 @@ Private Function YazismaOku(ByVal kaynak As Outlook.MailItem) As String
         Loop
         Set dizi(j + 1) = tmp
     Next i
-    YazismaOku = "KONU: " & kaynak.Subject & vbCrLf & _
-                  "MESAJ SAYISI (Outlook'un bulabildigi): " & CStr(adet) & _
-                  vbCrLf & String$(66, "-") & vbCrLf
+    YazismaOku = "YAZISMA GECMISI (Outlook'un bulabildigi)" & vbCrLf & _
+                  "Bulunan mesaj: " & CStr(adet) & vbCrLf & String$(58, "-") & vbCrLf
+    If adet >= MAX_KONUSMA Then
+        YazismaOku = YazismaOku & "Konusma ust sinirina ulasildi; tum yanitlar gorunmeyebilir." & vbCrLf
+    End If
+    If DateDiff("s", baslama, Now) >= MAX_KONUSMA_SANIYE Then
+        YazismaOku = YazismaOku & "Hiz icin yazisma taramasi sinirlandi." & vbCrLf
+    End If
     ilk = 1
     If adet > MAX_GOSTER Then
-        YazismaOku = YazismaOku & "Son " & MAX_GOSTER & _
-                      " mesaj gosteriliyor. Onceki mesajlar orijinal mailde." & vbCrLf & vbCrLf
+        YazismaOku = YazismaOku & "En son " & MAX_GOSTER & " mesaj gosteriliyor." & vbCrLf
         ilk = adet - MAX_GOSTER + 1
     End If
+    YazismaOku = YazismaOku & vbCrLf
     For i = ilk To adet
         Set m = dizi(i)
+        kimden = "Bilinmiyor": kime = "Bilinmiyor": konu = ""
+        metin = "[Mesaj icerigi okunamadi]"
+        ' Tek bir kilitli/erisim hatali posta diger mesajlari engellemesin.
+        On Error Resume Next
+        kimden = m.SenderName
+        kime = m.To
+        konu = m.Subject
         metin = m.Body
+        Err.Clear
+        On Error GoTo Hata
+        If Len(Trim$(metin)) = 0 Then metin = "[Mesaj metni bos veya okunamadi]"
         If Len(metin) > MAX_MAIL_METNI Then
-            metin = Left$(metin, MAX_MAIL_METNI) & vbCrLf & "[Metin kisaltildi]"
+            metin = Left$(metin, MAX_MAIL_METNI) & vbCrLf & "[Devami kisaltildi]"
         End If
-        satir = Format$(MesajTarihi(m), "dd.mm.yyyy HH:nn") & _
-                "  |  KIMDEN: " & m.SenderName & vbCrLf & _
-                "KIME: " & Left$(m.To, 180) & vbCrLf & _
-                "KONU: " & Left$(m.Subject, 240) & vbCrLf & vbCrLf & _
-                metin & vbCrLf & vbCrLf & String$(66, "-") & vbCrLf
+        satir = "MESAJ " & CStr(i) & " / " & CStr(adet) & vbCrLf & _
+                Format$(MesajTarihi(m), "dd.mm.yyyy HH:nn") & _
+                "  |  KIMDEN: " & Left$(kimden, 160) & vbCrLf & _
+                "KIME: " & Left$(kime, 180) & vbCrLf & _
+                "KONU: " & Left$(konu, 240) & vbCrLf & vbCrLf & _
+                metin & vbCrLf & vbCrLf & String$(58, "-") & vbCrLf
         YazismaOku = YazismaOku & satir
     Next i
     Exit Function
 Hata:
-    YazismaOku = "Yazisma listesi okunurken hata " & Err.Number & _
-                 ". Orijinal maili acmayi deneyin." & vbCrLf & _
-                 "Kaynak e-postanin baslangici:" & vbCrLf & Left$(kaynak.Body, 2500)
+    YazismaOku = "Yazisma listesi okunamadi. Hata " & Err.Number & _
+                 ". E-postayi Ac dugmesiyle asıl mesaji acmayi deneyin."
 End Function
 
 Private Sub btnAc_Click()
@@ -422,36 +755,83 @@ Hata:
 End Sub
 
 Private Sub btnHatirlat_Click()
+    ' Kullanici tek tikla Yanitla'yi secer; ek menu / kopya posta olusturulmaz.
+    HatirlatmaYanitTaslagi False
+End Sub
+
+Private Sub btnTumune_Click()
+    HatirlatmaYanitTaslagi True
+End Sub
+
+Private Sub HatirlatmaYanitTaslagi(ByVal tumune As Boolean)
     On Error GoTo Hata
-    Dim t As Outlook.TaskItem, m As Outlook.MailItem, taslak As Outlook.MailItem
-    Dim alici As String, konu As String, ek As String
+    Dim t As Outlook.TaskItem, kaynak As Outlook.MailItem
+    Dim taslak As Outlook.MailItem, govde As String
+    Dim p As Long, son As Long, etiket As String
     Set t = SeciliGorev()
     If t Is Nothing Then
-        MsgBox "Listeden bir gorev secin.", vbInformation
+        MsgBox "Once soldan bir is secin.", vbInformation
         Exit Sub
     End If
-    Set m = KaynakMail(t)
-    alici = Alan(t, ALAN_ALICI)
-    If Len(alici) = 0 And Not m Is Nothing Then
-        On Error Resume Next
-        alici = m.To
-        On Error GoTo Hata
+    If Durum(t) = "DONE" Then
+        MsgBox "Tamamlanan is icin hatirlatma taslagi olusturulmaz.", vbInformation
+        Exit Sub
     End If
-    konu = Alan(t, ALAN_KONU)
-    If Len(konu) = 0 Then konu = t.Subject
-    ek = Left$(txtYazisma.Text, 6000)
-    Set taslak = Application.CreateItem(olMailItem)
-    taslak.To = alici
-    taslak.Subject = "RE: " & Left$(konu, 190)
-    taslak.Body = "Merhaba," & vbCrLf & vbCrLf & _
-        "Asagidaki konu hakkinda guncel durumu rica edebilir miyim?" & _
-        vbCrLf & vbCrLf & "Tesekkurler." & vbCrLf & vbCrLf & _
-        "--- ONCEKI YAZISMA OZETI (KONTROL EDIN) ---" & vbCrLf & ek
+    Set kaynak = KaynakMail(t)
+    If kaynak Is Nothing Then
+        MsgBox "Orijinal e-posta bulunamadi. Gercek Yanitla/Tumune Yanitla taslagi " & _
+               "acilamiyor. 'E-postayi Ac' ile Outlook aramasini deneyin.", vbExclamation
+        Exit Sub
+    End If
+
+    ' Gercek Outlook yanit nesnesi kullanilir; MessageID / konusma baglami korunur.
+    ' Bu metotlar hicbir e-postayi kendiliginden gondermez.
+    If tumune Then
+        Set taslak = kaynak.ReplyAll
+        etiket = "Tumune yanitla"
+    Else
+        Set taslak = kaynak.Reply
+        etiket = "Yanitla"
+    End If
+    If taslak Is Nothing Then Err.Raise vbObjectError + 127, , "Outlook yanit taslagi olusturamadi."
+
+    ' Display, Outlook imzasini/yazisma alintisini yukledikten sonra metni ekler.
+    ' Orijinal HTML govdesi ve e-posta zinciri silinmez.
     taslak.Display
-    MsgBox "Taslak acildi, GONDERILMEDI. Aliciyi ve icerigi kontrol edin.", vbInformation
+    govde = taslak.HTMLBody
+    p = InStr(1, govde, "<body", vbTextCompare)
+    If p > 0 Then
+        son = InStr(p, govde, ">")
+    Else
+        son = 0
+    End If
+    If son > 0 Then
+        taslak.HTMLBody = Left$(govde, son) & _
+            "<p style='font-family:Calibri,Arial;font-size:11pt'>Merhaba,</p>" & _
+            "<p style='font-family:Calibri,Arial;font-size:11pt'>" & _
+            "Aşağıdaki yazışmayla ilgili güncel durumu paylaşabilir misiniz?</p>" & _
+            "<p style='font-family:Calibri,Arial;font-size:11pt'>Teşekkürler.</p><br>" & _
+            Mid$(govde, son + 1)
+    Else
+        taslak.Body = "Merhaba," & vbCrLf & vbCrLf & _
+            "Aşağıdaki yazışmayla ilgili güncel durumu paylaşabilir misiniz?" & _
+            vbCrLf & vbCrLf & "Teşekkürler." & vbCrLf & vbCrLf & taslak.Body
+    End If
+
+    ' Ozellikle gonderilen e-postadaki Yanitla kendi adresinize donebilir.
+    ' Kullanicinin adresleri kontrol etmesi zorunludur; asla otomatik Send yok.
+    If Not tumune Then
+        MsgBox etiket & " taslagi acildi; GONDERILMEDI." & vbCrLf & _
+               "Kaynak e-postayi siz gonderdiyseniz Outlook 'Yanitla' sizi alici yapabilir." & _
+               vbCrLf & "Gondermeden once Kime alanini kontrol edin.", vbInformation
+    Else
+        MsgBox etiket & " taslagi acildi; GONDERILMEDI." & vbCrLf & _
+               "Tum alicilari ve varsa CC/Bilgi alanini kontrol edin.", vbInformation
+    End If
     Exit Sub
 Hata:
-    MsgBox "Taslak hazirlanamadi. Hata " & Err.Number & ": " & Err.Description, vbExclamation
+    MsgBox "Yanit taslagi hazirlanamadi. Hata " & Err.Number & ": " & _
+           Err.Description, vbExclamation, "Is ve Yanit Radari"
 End Sub
 
 Private Sub btnTamam_Click()
@@ -468,17 +848,173 @@ Private Sub btnTamam_Click()
     End If
     If MsgBox("Bu gorevi tamamlandi olarak kaydedelim mi?" & vbCrLf & _
               t.Subject, vbYesNo + vbQuestion, "Gorevi tamamla") <> vbYes Then Exit Sub
+    Dim p As Outlook.UserProperty
+    Set p = t.UserProperties.Find(ALAN_DURUM)
+    If p Is Nothing Then Set p = t.UserProperties.Add(ALAN_DURUM, olText, False)
+    p.Value = "DONE"
+    t.ReminderSet = False
     t.Status = olTaskComplete
     t.PercentComplete = 100
     t.Save
-    Yukle
+    Yukle t.EntryID
     Exit Sub
 Hata:
     MsgBox "Gorev tamamlanamadi. Hata " & Err.Number & ": " & Err.Description, vbExclamation
 End Sub
 
+Private Sub btnKategori_Click()
+    On Error GoTo Hata
+    Dim t As Outlook.TaskItem, yanit As String, durumKodu As String
+    Dim p As Outlook.UserProperty
+    Set t = SeciliGorev()
+    If t Is Nothing Then
+        MsgBox "Önce listeden bir iş seçin.", vbInformation
+        Exit Sub
+    End If
+    If t.Status = olTaskComplete Then
+        MsgBox "Tamamlanmış işin durumu burada değiştirilmiyor.", vbInformation
+        Exit Sub
+    End If
+    yanit = Trim$(InputBox("Yeni durumu seçin:" & vbCrLf & _
+            "1 - Yapacağım iş" & vbCrLf & _
+            "2 - Yanıt bekliyorum" & vbCrLf & _
+            "3 - İncelenecek" & vbCrLf & _
+            "Boş/İptal - Vazgeç", "İş Masam - Durum", ""))
+    Select Case yanit
+        Case "1": durumKodu = "TODO"
+        Case "2": durumKodu = "WAIT"
+        Case "3": durumKodu = "REVIEW"
+        Case "": Exit Sub
+        Case Else
+            MsgBox "Geçersiz seçim. Görev değiştirilmedi.", vbExclamation
+            Exit Sub
+    End Select
+    Set p = t.UserProperties.Find(ALAN_DURUM)
+    If p Is Nothing Then Set p = t.UserProperties.Add(ALAN_DURUM, olText, False)
+    p.Value = durumKodu
+    t.Save
+    Yukle t.EntryID
+    Exit Sub
+Hata:
+    MsgBox "Durum değiştirilemedi. Hata " & Err.Number & ": " & Err.Description, vbExclamation
+End Sub
+
+Private Sub btnTarih_Click()
+    On Error GoTo Hata
+    Dim t As Outlook.TaskItem, yanit As String, tarih As Date
+    Set t = SeciliGorev()
+    If t Is Nothing Then
+        MsgBox "Önce listeden bir iş seçin.", vbInformation
+        Exit Sub
+    End If
+    If t.Status = olTaskComplete Then
+        MsgBox "Tamamlanan bir işe tarih verilemez.", vbInformation
+        Exit Sub
+    End If
+    yanit = Trim$(InputBox("Hatırlatma zamanını seçin:" & vbCrLf & _
+            "1 - Bir saat sonra" & vbCrLf & _
+            "2 - Yarın 09.00" & vbCrLf & _
+            "3 - Üç gün sonra 09.00" & vbCrLf & _
+            "4 - Bir hafta sonra 09.00" & vbCrLf & _
+            "5 - Özel tarih" & vbCrLf & _
+            "0 - Hatırlatmayı kaldır" & vbCrLf & vbCrLf & _
+            "Boş/İptal - Tarihi değiştirme", "İş Masam - Tarih", ""))
+    If Len(yanit) = 0 Then Exit Sub
+    Select Case yanit
+        Case "0"
+            If MsgBox("Bu işin tarihini ve hatırlatmasını kaldıralım mı?", _
+                      vbQuestion + vbYesNo + vbDefaultButton2) <> vbYes Then Exit Sub
+            t.ReminderSet = False
+            t.DueDate = DateSerial(4501, 1, 1)
+            t.StartDate = DateSerial(4501, 1, 1)
+        Case "1": tarih = DateAdd("h", 1, Now)
+        Case "2": tarih = DateAdd("d", 1, Date) + TimeSerial(9, 0, 0)
+        Case "3": tarih = DateAdd("d", 3, Date) + TimeSerial(9, 0, 0)
+        Case "4": tarih = DateAdd("d", 7, Date) + TimeSerial(9, 0, 0)
+        Case "5"
+            yanit = Trim$(InputBox("Tarih ve saat yazın." & vbCrLf & _
+                  "Örnek: 25.11 15:30 veya 25.11.2026 15:30", "Özel tarih", ""))
+            If Len(yanit) = 0 Then Exit Sub
+            If Not RadarTarihCoz(yanit, tarih) Then
+                MsgBox "Tarih anlaşılamadı veya geçmişte. Değişiklik yapılmadı.", vbExclamation
+                Exit Sub
+            End If
+        Case Else
+            MsgBox "Geçersiz seçim. Tarih değiştirilmedi.", vbExclamation
+            Exit Sub
+    End Select
+    If yanit <> "0" Then
+        If tarih <= Now Then
+            MsgBox "Geçmiş tarih seçilemez. Değişiklik yapılmadı.", vbExclamation
+            Exit Sub
+        End If
+        t.ReminderSet = False
+        t.StartDate = Date
+        t.DueDate = DateSerial(Year(tarih), Month(tarih), Day(tarih))
+        t.ReminderTime = tarih
+        t.ReminderSet = True
+    End If
+    t.Save
+    Yukle t.EntryID
+    Exit Sub
+Hata:
+    MsgBox "Tarih değiştirilemedi. Hata " & Err.Number & ": " & Err.Description, vbExclamation
+End Sub
+
+Private Function RadarSayiMi(ByVal yazi As String) As Boolean
+    Dim i As Long, kod As Long
+    If Len(yazi) = 0 Then Exit Function
+    For i = 1 To Len(yazi)
+        kod = AscW(Mid$(yazi, i, 1))
+        If kod < 48 Or kod > 57 Then Exit Function
+    Next i
+    RadarSayiMi = True
+End Function
+
+Private Function RadarTarihCoz(ByVal yazi As String, ByRef sonuc As Date) As Boolean
+    On Error GoTo Bitti
+    Dim bolum() As String, tarih() As String, saat() As String
+    Dim gun As Long, ay As Long, yil As Long, sa As Long, dk As Long
+    Dim gd As Date
+    yazi = Replace(Trim$(yazi), "/", ".")
+    Do While InStr(yazi, "  ") > 0
+        yazi = Replace(yazi, "  ", " ")
+    Loop
+    bolum = Split(yazi, " ")
+    If UBound(bolum) > 1 Then Exit Function
+    tarih = Split(bolum(0), ".")
+    If UBound(tarih) <> 1 And UBound(tarih) <> 2 Then Exit Function
+    If Not RadarSayiMi(tarih(0)) Or Not RadarSayiMi(tarih(1)) Then Exit Function
+    gun = CLng(tarih(0))
+    ay = CLng(tarih(1))
+    yil = Year(Date)
+    If UBound(tarih) = 2 Then
+        If Len(tarih(2)) <> 4 Or Not RadarSayiMi(tarih(2)) Then Exit Function
+        yil = CLng(tarih(2))
+    End If
+    sa = 9: dk = 0
+    If UBound(bolum) = 1 Then
+        saat = Split(bolum(1), ":")
+        If UBound(saat) <> 1 Then Exit Function
+        If Not RadarSayiMi(saat(0)) Or Not RadarSayiMi(saat(1)) Then Exit Function
+        sa = CLng(saat(0)): dk = CLng(saat(1))
+    End If
+    If yil < 2020 Or yil > 2100 Then Exit Function
+    If ay < 1 Or ay > 12 Or gun < 1 Or gun > 31 Then Exit Function
+    If sa < 0 Or sa > 23 Or dk < 0 Or dk > 59 Then Exit Function
+    gd = DateSerial(yil, ay, gun)
+    If Year(gd) <> yil Or Month(gd) <> ay Or Day(gd) <> gun Then Exit Function
+    sonuc = gd + TimeSerial(sa, dk, 0)
+    RadarTarihCoz = (sonuc > Now)
+Bitti:
+End Function
+
 Private Sub btnYenile_Click()
-    Yukle
+    Dim secim As String
+    If lstIsler.ListIndex >= 0 Then
+        secim = CStr(lstIsler.List(lstIsler.ListIndex, 3))
+    End If
+    Yukle secim
 End Sub
 
 Private Sub btnKapat_Click()
